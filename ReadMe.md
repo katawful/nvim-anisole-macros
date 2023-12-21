@@ -26,10 +26,10 @@ The Neovim API is generally very clear in its naming on what each API function a
 (local user-command (def-command :UserCommand (fn [] (print "Hello world")) "BufEnter hello world")
 ;; Clear out all "BufEnter" autocommands
 ;; "cle-awk event bufenter"
-(cle-auc! {:event :BufEnter})
+(cle-autocmd! {:event :BufEnter})
 ;; Delete 'autocmd' autocommand explicitly
 ;; "del-awk autocmd"
-(del-auc! autocmd)
+(del-autocmd! autocmd)
 ;; Set option 'number'
 ;; "set-opt number true"
 (set-opt number true)
@@ -44,7 +44,7 @@ The Neovim API is generally very clear in its naming on what each API function a
 Each convention prefix is meant to pronounced literally, for instance `cre-command` is pronounced as "kree-command".
 
 ## `!`
-In Fennel's style guide, `!` as a suffix refers to file-system operations. I have extended this to imply state updates. `cle-` and `del-` are explicit updates of Neovim's state, and thus will always be suffixed by `!`. This character can be pronounced as "bang". `cle-auc!` would be pronounced as "kle-awk-bang".
+In Fennel's style guide, `!` as a suffix refers to file-system operations. I have extended this to imply state updates. `cle-` and `del-` are explicit updates of Neovim's state, and thus will always be suffixed by `!`. This character can be pronounced as "bang". `cle-autocmd!` would be pronounced as "kle-awk-bang".
 
 ## `-`
 `-` as a suffix implies a shortening from Vim/Neovim functions. For instance, `nno-` would not be pronounced as 'en-en-oh', but as "normal mode remap" from `nnoremap`. The use of these is minimized where appropriate, and likely will be removed entirely from these macros at a future date.
@@ -52,7 +52,7 @@ In Fennel's style guide, `!` as a suffix refers to file-system operations. I hav
 ## `<-`, `->`
 In Fennel's style guide, `->` is used for conversion functions. For instance taking a string and making it into a sequential table would be `string->table`. `->` thus gets read as "to", making this function "string to table". This convention is used where appropriate.
 
-Conversely, `<-` becomes "from", and implies a source to look from *or* a file to read from if it is a file system operation. A function to clear an autocommand specifically from a list of events would be `cle-auc<-event!`, which would be read as "kle-awk-from-event". This is generally used when one only wishes to do 1 level of search.
+Conversely, `<-` becomes "from", and implies a source to look from *or* a file to read from if it is a file system operation. A function to clear an autocommand specifically from a list of events would be `cle-autocmd<-event!`, which would be read as "kle-awk-from-event". This is generally used when one only wishes to do 1 level of search.
 
 ## General Signatures
 In order to maintain consistency, macros here have an expectation of signature behavior. It varies a bit from macro type to macro type.
@@ -88,7 +88,7 @@ This macro behaves the same as the equivalent creation macro, but returns a valu
 For these macros, a "deletion" is specifically about removing the entire object. After the expanded macro is run, the object passed will not exist according to Neovim. A "clearing", on the other hand, will only remove the values present for the object. Neovim will still be aware of the object:
 
 ```fennel
-(cle-auc<-event! :BufEnter) ; clear any autocommands found for BufEnter
+(cle-autocmd<-event! :BufEnter) ; clear any autocommands found for BufEnter
 (del-command! "UserCommand") ; delete the entire user command "UserCommand"
 ```
 
@@ -100,7 +100,7 @@ The argument passed depends on the macro in question, although it is usually sel
 "Get" macros are designed to get the value of some object. This is purely a data access. The data type returned depends on the macro:
 
 ```fennel
-(get-auc {:group "SomeCoolGroup"}) ; get autocommands from group "SomeCoolGroup"
+(get-autocmd {:group "SomeCoolGroup"}) ; get autocommands from group "SomeCoolGroup"
 (print (get-opt mouse)) ; print the value of option "mouse"
 ```
 
@@ -508,48 +508,48 @@ Absorbs `auc-` calls within its list, and injects the group throughout each. Onl
 
 The group must have been previously defined, it cannot be passed through with this macro. For additional notice, only `auc-` calls are accepted. Attempting to use anything else will result in a compile-time error. This is *not* a way to be programmatic about autocommand creation, it is only equivalent to the `->` threading macros in function. Any programmatic work of autocommands must be done in a list outside of this scope.
 
-#### `cle-auc!`
+#### `cle-autocmd!`
 Clears an autocommand using `vim.api.nvim_clear_autocommands`.
 
 ##### Syntax
 ```fennel
-(cle-auc! (:buffer 0})
+(cle-autocmd! (:buffer 0})
 (vim.api.nivm_clear_autocmds {:buffer 0})
 ```
 
-#### `cle-auc<-event!`, `cle-auc<-pattern!`, `cle-auc<-buffer!`, `cle-auc<-group!`
+#### `cle-autocmd<-event!`, `cle-autocmd<-pattern!`, `cle-autocmd<-buffer!`, `cle-autocmd<-group!`
 Takes the appropriate type, single and plural, and only that type and clears the autocommands using `vim.api.nvim_clear_autocommands`
 
-- `cle-auc<-event!`: takes a string or sequential table of strings corresponding to event name
-- `cle-auc<-pattern!`: takes a string or sequential table of strings corresponding to a pattern
-- `cle-auc<-buffer!`: takes a int buffer number
-- `cle-auc<-group!`: takes a string or sequential table of strings corresponding to group name
+- `cle-autocmd<-event!`: takes a string or sequential table of strings corresponding to event name
+- `cle-autocmd<-pattern!`: takes a string or sequential table of strings corresponding to a pattern
+- `cle-autocmd<-buffer!`: takes a int buffer number
+- `cle-autocmd<-group!`: takes a string or sequential table of strings corresponding to group name
 
 ##### Syntax
 ```fennel
-(cle-auc<-event! :Event)
+(cle-autocmd<-event! :Event)
 (vim.api.nvim_clear_autocmd {:event "Event"})
 ```
 
-#### `get-auc!`
+#### `get-autocmd!`
 Clears an autocommand using `vim.api.nvim_get_autocmds`.
 
 ##### Syntax
 ```fennel
-(get-auc! (:buffer 0})
+(get-autocmd! (:buffer 0})
 (vim.api.nivm_get_autocmds {:buffer 0})
 ```
 
-#### `get-auc<-event!`, `get-auc<-pattern!`, `get-auc<-buffer!`, `get-auc<-group!`
+#### `get-autocmd<-event!`, `get-autocmd<-pattern!`, `get-autocmd<-buffer!`, `get-autocmd<-group!`
 Takes the appropriate type, single and plural, and only that type and gets the autocommands using `vim.api.nvim_get_autocmds`
 
-- `get-auc<-event!`: takes a string or sequential table of strings corresponding to event name
-- `get-auc<-pattern!`: takes a string or sequential table of strings corresponding to a pattern
-- `get-auc<-group!`: takes a string or sequential table of strings corresponding to group name
+- `get-autocmd<-event!`: takes a string or sequential table of strings corresponding to event name
+- `get-autocmd<-pattern!`: takes a string or sequential table of strings corresponding to a pattern
+- `get-autocmd<-group!`: takes a string or sequential table of strings corresponding to group name
 
 ##### Syntax
 ```fennel
-(get-auc<-event! :Event)
+(get-autocmd<-event! :Event)
 (vim.api.nvim_get_autocmds {:event "Event"})
 ```
 
@@ -565,15 +565,15 @@ Deletes an autogroup by name or by id.
 (vim.api.nvim_del_augroup_by_id 0)
 ```
 
-#### `do-auc`
+#### `do-autocmd`
 Fires an autocmd using `vim.api.nvim_exec_autocmds`.
 
 ##### Syntax
 ```fennel
-(do-auc :Event)
+(do-autocmd :Event)
 (vim.api.nvim_exec_autocmds "Event" {})
 
-(do-auc [:Event1 :Event2] {:group :Group})
+(do-autocmd [:Event1 :Event2] {:group :Group})
 (vim.api.nvim_exec_autocmds ["Event1" "Event2"] {:group "Group"})
 ```
 
