@@ -44,9 +44,9 @@ local function _11_()
   it("do-viml with no args", _12_)
   local function _14_()
     local function _15_()
-      return "(do (let [result_2_auto ((. vim.fn \"empty\"))] (if (= result_2_auto 0) false true)))"
+      return "(do (let [result_6_auto ((. vim.fn \"empty\"))] (if (= result_6_auto 0) false true)))"
     end
-    return assert.are.same("(do (let [result_2_auto ((. vim.fn \"empty\"))] (if (= result_2_auto 0) false true)))", _15_())
+    return assert.are.same("(do (let [result_6_auto ((. vim.fn \"empty\"))] (if (= result_6_auto 0) false true)))", _15_())
   end
   it("do-viml boolean returning function", _14_)
   local function _16_()
@@ -58,9 +58,9 @@ local function _11_()
   it("do-viml with arg", _16_)
   local function _18_()
     local function _19_()
-      return "(do (let [result_2_auto ((. vim.fn \"has\") \"arg\")] (if (= result_2_auto 0) false true)))"
+      return "(do (let [result_6_auto ((. vim.fn \"has\") \"arg\")] (if (= result_6_auto 0) false true)))"
     end
-    return assert.are.same("(do (let [result_2_auto ((. vim.fn \"has\") \"arg\")] (if (= result_2_auto 0) false true)))", _19_())
+    return assert.are.same("(do (let [result_6_auto ((. vim.fn \"has\") \"arg\")] (if (= result_6_auto 0) false true)))", _19_())
   end
   return it("do-viml boolean returning function with arg", _18_)
 end
@@ -68,110 +68,82 @@ describe("Do VimL 8 command macro:", _11_)
 local function _20_()
   local function _21_()
     local function _22_()
-      return "(vim.api.nvim_create_user_command \"UserCommand\" (fn [] callback) {})"
-    end
-    return assert.are.same("(vim.api.nvim_create_user_command \"UserCommand\" (fn [] callback) {})", _22_())
-  end
-  it("cre-command with name and callback", _21_)
-  local function _23_()
-    local function _24_()
-      return "(vim.api.nvim_create_user_command \"UserCommand\" (fn [] callback) {:desc \"Description\"})"
-    end
-    return assert.are.same("(vim.api.nvim_create_user_command \"UserCommand\" (fn [] callback) {:desc \"Description\"})", _24_())
-  end
-  it("cre-command with name, callback, and description", _23_)
-  local function _25_()
-    local function _26_()
       return "(vim.api.nvim_create_user_command \"UserCommand\" (fn [] callback) {:bang true :desc \"Description\"})"
     end
-    return assert.are.same("(vim.api.nvim_create_user_command \"UserCommand\" (fn [] callback) {:bang true :desc \"Description\"})", _26_())
+    return assert.are.same("(vim.api.nvim_create_user_command \"UserCommand\" (fn [] callback) {:bang true :desc \"Description\"})", _22_())
   end
-  it("cre-command with name, callback, description, and opts table", _25_)
-  local function _27_()
-    local function _28_()
-      return "(vim.api.nvim_create_user_command \"UserCommand\" (fn [] callback) {:bang true})"
-    end
-    return assert.are.same("(vim.api.nvim_create_user_command \"UserCommand\" (fn [] callback) {:bang true})", _28_())
-  end
-  it("cre-command with name, callback, and opts table", _27_)
-  local function _29_()
-    local function _30_()
-      return "(vim.api.nvim_buf_create_user_command 0 \"UserCommand\" (fn [] callback) {:bang true})"
-    end
-    return assert.are.same("(vim.api.nvim_buf_create_user_command 0 \"UserCommand\" (fn [] callback) {:bang true})", _30_())
-  end
-  it("cre-command with name, callback, and opts table with buffer option", _29_)
-  local function _31_()
-    local function _32_()
+  it("cre-command without buffer option", _21_)
+  local function _23_()
+    local function _24_()
       return "(vim.api.nvim_buf_create_user_command 0 \"UserCommand\" (fn [] callback) {:bang true :desc \"Description\"})"
     end
-    return assert.are.same("(vim.api.nvim_buf_create_user_command 0 \"UserCommand\" (fn [] callback) {:bang true :desc \"Description\"})", _32_())
+    return assert.are.same("(vim.api.nvim_buf_create_user_command 0 \"UserCommand\" (fn [] callback) {:bang true :desc \"Description\"})", _24_())
   end
-  return it("cre-command with name, callback, description, and opts table with buffer option", _31_)
+  return it("cre-command with buffer option", _23_)
 end
 describe("Create user-command macro:", _20_)
-local function _33_()
-  local function _34_()
-    local function _35_()
-      return "(do (vim.api.nvim_create_user_command \"UserCommand\" (fn [] callback) {}) \"UserCommand\")"
+local function _25_()
+  local function _26_()
+    local function _27_()
+      return "(do (vim.api.nvim_create_user_command \"UserCommand\" (fn [] callback) {:desc \"Description\"}) \"UserCommand\")"
     end
-    return assert.are.same("(do (vim.api.nvim_create_user_command \"UserCommand\" (fn [] callback) {}) \"UserCommand\")", _35_())
+    return assert.are.same("(do (vim.api.nvim_create_user_command \"UserCommand\" (fn [] callback) {:desc \"Description\"}) \"UserCommand\")", _27_())
   end
-  return it("def-command", _34_)
+  return it("def-command", _26_)
 end
-describe("Define user-command macro:", _33_)
-local function _36_()
-  local function _37_()
-    local function _38_()
+describe("Define user-command macro:", _25_)
+local function _28_()
+  local function _29_()
+    local function _30_()
       return "(vim.api.nvim_del_user_command \"UserCommand\")"
     end
-    return assert.are.same("(vim.api.nvim_del_user_command \"UserCommand\")", _38_())
+    return assert.are.same("(vim.api.nvim_del_user_command \"UserCommand\")", _30_())
   end
-  it("del-command with just name", _37_)
-  local function _39_()
-    local function _40_()
+  it("del-command with just name", _29_)
+  local function _31_()
+    local function _32_()
       return "(vim.api.nvim_buf_del_user_command \"UserCommand\" 0)"
     end
-    return assert.are.same("(vim.api.nvim_buf_del_user_command \"UserCommand\" 0)", _40_())
+    return assert.are.same("(vim.api.nvim_buf_del_user_command \"UserCommand\" 0)", _32_())
   end
-  it("del-command with name and boolean buffer option", _39_)
-  local function _41_()
-    local function _42_()
+  it("del-command with name and boolean buffer option", _31_)
+  local function _33_()
+    local function _34_()
       return "(vim.api.nvim_buf_del_user_command \"UserCommand\" 1)"
     end
-    return assert.are.same("(vim.api.nvim_buf_del_user_command \"UserCommand\" 1)", _42_())
+    return assert.are.same("(vim.api.nvim_buf_del_user_command \"UserCommand\" 1)", _34_())
   end
-  return it("del-command with name and int buffer option", _41_)
+  return it("del-command with name and int buffer option", _33_)
 end
-describe("Delete user-command macro:", _36_)
-local function _43_()
-  local function _44_()
-    local function _45_()
+describe("Delete user-command macro:", _28_)
+local function _35_()
+  local function _36_()
+    local function _37_()
       return "(do (vim.cmd {:args {} :cmd \"function\" :output true}))"
     end
-    return assert.are.same("(do (vim.cmd {:args {} :cmd \"function\" :output true}))", _45_())
+    return assert.are.same("(do (vim.cmd {:args {} :cmd \"function\" :output true}))", _37_())
   end
-  it("do-command with no args", _44_)
-  local function _46_()
-    local function _47_()
+  it("do-command with no args", _36_)
+  local function _38_()
+    local function _39_()
       return "(do (vim.cmd {:args [\"arg\"] :cmd \"function\" :output true}))"
     end
-    return assert.are.same("(do (vim.cmd {:args [\"arg\"] :cmd \"function\" :output true}))", _47_())
+    return assert.are.same("(do (vim.cmd {:args [\"arg\"] :cmd \"function\" :output true}))", _39_())
   end
-  it("do-command with switch arg", _46_)
-  local function _48_()
-    local function _49_()
+  it("do-command with switch arg", _38_)
+  local function _40_()
+    local function _41_()
       return "(do (vim.cmd {:args [\"key=value\"] :cmd \"function\" :output true}))"
     end
-    return assert.are.same("(do (vim.cmd {:args [\"key=value\"] :cmd \"function\" :output true}))", _49_())
+    return assert.are.same("(do (vim.cmd {:args [\"key=value\"] :cmd \"function\" :output true}))", _41_())
   end
-  it("do-command with table arg", _48_)
-  local function _50_()
-    local function _51_()
+  it("do-command with table arg", _40_)
+  local function _42_()
+    local function _43_()
       return "(do (vim.cmd {:args [\"arg\" \"key=value\"] :cmd \"function\" :output true}))"
     end
-    return assert.are.same("(do (vim.cmd {:args [\"arg\" \"key=value\"] :cmd \"function\" :output true}))", _51_())
+    return assert.are.same("(do (vim.cmd {:args [\"arg\" \"key=value\"] :cmd \"function\" :output true}))", _43_())
   end
-  return it("do-command with table and switch arg", _50_)
+  return it("do-command with table and switch arg", _42_)
 end
-return describe("Do user-command macro:", _43_)
+return describe("Do user-command macro:", _35_)

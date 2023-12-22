@@ -1,6 +1,36 @@
 ;;; Macros for Neovim utilities
 ;; [nfnl-macro]
 
+(fn assert-arg [var# var-type# var-pos# macro#]
+  "FN -- Handle `assert-compile` simpler"
+  (if (= (type var-type#) :table)
+      (let [type-results# (do
+                            (local out# [])
+                            (each [_ v# (ipairs var-type#)]
+                              (if (= (type var#) v#)
+                                  (table.insert out# true)
+                                  false))
+                            out#)
+            possible-type-string# (do
+                                    (var out# "")
+                                    (each [_ v# (ipairs var-type#)]
+                                      (set out# (.. out# v# " or ")))
+                                    (set out# (string.sub out# 1 -5))
+                                    out#)]
+        (assert-compile (do
+                          (var truthy# false)
+                          (each [_ v# (ipairs type-results#)]
+                            (if v#
+                                (set truthy# true)))
+                          truthy#)
+                        (string.format "\"%s\" -- Expected %s for arg #%s, received %s"
+                                       (tostring macro#) possible-type-string#
+                                       var-pos# (type var#))))
+      (assert-compile (= (type var#) var-type#)
+                      (string.format "\"%s\" -- Expected %s for arg #%s, received %s"
+                                     (tostring macro#) var-type# var-pos#
+                                     (type var#)))))
+
 (local truthy-functions {:bufexists true
                          :buflisted true
                          :bufloaded true
@@ -19,20 +49,10 @@
                          :islocked true
                          :isnan true})
 
-;; Macro -- call Ex/user commands a bit more cleanly
-;; @function -- the function demanded
-;; @... -- string for arguments
-(fn com- [function ...]
-  "Macro -- call Ex/user commands a bit more cleanly"
-  (let [function (tostring function)
-        args [...]]
-    (var output function)
-    (each [k v (pairs args)]
-      (set output (.. output " " (tostring v))))
-    `(vim.api.nvim_command ,output)))
-
 (fn do-ex [function ...]
-  "Macro -- run a Ex command
+  "Macro -- Runs a Ex command
+@function: |Ex| # Ex function
+@... # Arguments for Ex command
 Can accept a table for functions that take key=val args"
   (let [passed-args# [...]
         args# []
@@ -45,8 +65,10 @@ Can accept a table for functions that take key=val args"
     `(vim.cmd {:cmd ,function :args ,args# :output true})))
 
 (fn do-viml [function ...]
-  "Macro -- run a VimL function
-Returing boolean for builtin truthy/falsy functions such as 'has()'"
+  "Macro -- Runs a VimL function
+@function: |Vimscript| # Vimscript function
+@... # Arguments for Vimscript command
+Returns boolean for builtin truthy/falsy functions such as 'has()'"
   (let [args# ...
         func# (tostring function)]
     (if (. truthy-functions func#)
@@ -55,49 +77,34 @@ Returing boolean for builtin truthy/falsy functions such as 'has()'"
              (if (= result# 0) false true)))
         `((. vim.fn ,func#) ,...))))
 
-;; Macro -- create a user command
-;; Has 3 outputs
-;; 1 -- No description, but opts table
-;; 2 -- Description and optional opts table
-;; 3 -- Just name and command
-;; @name -- name for user command, should start with a capital
-;; @command -- whatever fennel function desired
-;; @desc -- description, or opts table if no description
-;; @args -- opts table when description is used
-(fn cre-command [name command desc args]
-  "Macro -- create a user command"
+(fn cre-command [name callback desc args]
+  "Macro -- Creates a user command
+@name: |string| # Name for user command
+@callback: |string| # The function that gets called on fire of user command
+@desc: |string| # Description of user command
+@args: |opt table| # Opts table for `vim.api.nvim_create_user_command`"
+  (assert-arg name :string 1 :cre-command)
+  (assert-arg callback [:table :function] 2 :cre-command)
+  (assert-arg desc :string 3 :cre-command)
+  (assert-arg args :table 4 :cre-command)
   (let [opts# {}]
-    (if (= (type desc) :table) ; no description but opts table
-        (if desc.buffer
-            (do
-              (each [key val (pairs desc)]
-                (tset opts# key val))
-              (let [buffer# (if (= opts#.buffer true) 0
-                                opts#.buffer)]
-                (set opts#.buffer nil)
-                `(vim.api.nvim_buf_create_user_command ,buffer# ,name ,command
-                                                       ,opts#)))
-            `(vim.api.nvim_create_user_command ,name ,command ,desc))
-        (= (type desc) :string) ; descriptin and optional opts table
-        (do
-          (tset opts# :desc desc)
-          (if (not= args nil)
-              (each [key val (pairs args)]
-                (tset opts# key val)))
-          (if opts#.buffer
-              (do
-                (let [buffer# (if (= opts#.buffer true) 0
-                                  opts#.buffer)]
-                  (set opts#.buffer nil)
-                  `(vim.api.nvim_buf_create_user_command ,buffer# ,name
-                                                         ,command ,opts#)))
-              `(vim.api.nvim_create_user_command ,name ,command ,opts#)))
-        ; no additional options or description
-        (do
-          `(vim.api.nvim_create_user_command ,name ,command ,opts#)))))
+    (tset opts# :desc desc)
+    (each [k# v# (pairs args)]
+      (tset opts# k# v#))
+    (if (?. args :buffer)
+        (let [buffer# (if (= args.buffer true) 0
+                          args.buffer)]
+          (tset opts# :buffer nil)
+          `(vim.api.nvim_buf_create_user_command ,buffer# ,name ,callback
+                                                 ,opts#))
+        `(vim.api.nvim_create_user_command ,name ,callback ,opts#))))
 
 (fn def-command [name command desc args]
   "Macro -- define a user command with a returned value
+@name: |string| # Name for user command
+@callback: |string| # The function that gets called on fire of user command
+@desc: |string| # Description of user command
+@args: |opt table| # Opts table for `vim.api.nvim_create_user_command`
 Returns a string of the user-command name"
   `(do
      ,(cre-command name command desc args)
@@ -105,12 +112,13 @@ Returns a string of the user-command name"
 
 (fn del-command [name ?buffer]
   "Macro -- delete a user command
+@name: |string| # Name for user command
+@?buffer(optional): |int| or |boolean| # Use a buffer
 Buffer created user commands will fail if ?buffer is not provided"
+  (assert-arg name :string 1 :del-command)
   (if ?buffer
       (do
-        (assert-compile (or (= ?buffer true) (= (type ?buffer) :number))
-                        (.. "Expected true or number for arg #2, got "
-                            (type ?buffer)) ?buffer)
+        (assert-arg ?buffer [:boolean :number] 2 :del-command)
         (if (= ?buffer true)
             `(vim.api.nvim_buf_del_user_command ,name 0)
             `(vim.api.nvim_buf_del_user_command ,name ,?buffer)))
@@ -121,58 +129,4 @@ Buffer created user commands will fail if ?buffer is not provided"
   `(do
      ,(do-ex command# ...)))
 
-; (let [args# [...]
-;       arg-string# []
-;       start-char# (string.sub (tostring command#) 1 1)]
-;   (each [_ arg# (ipairs args#)]
-;     (if (= (type arg#) :table)
-;         (each [key# val# (pairs arg#)]
-;           (table.insert arg-string# (string.format "%s=%s" key# val#)))
-;         (= (type arg#) :string)
-;         (table.insert arg-string# (.. "\"" arg# "\""))
-;         (table.insert arg-string# arg#)))
-;   (var str# "")
-;   (each [_ v# (ipairs arg-string#)]
-;     (set str# (string.format "%s %s" str# v#)))
-;   (if (= (type command#) :string)
-;       (assert-compile (start-char#:match "[A-Z]")
-;                       "Expected a user command that starts with an upper-case letter"
-;                       command#))
-;   `(vim.cmd (.. ,command# ,str#))))
-
-(fn command- [...]
-  "Macro -- alias for cre-command"
-  (cre-command ...))
-
-;; Macro -- create a user command using vimscript for non-0.7 users
-;; @name -- command name
-;; @attributes -- a table of user command attributes
-;; @vimscript -- whatever vimscript one is running
-(fn command*-vim [name attributes vimscript] ; TODO - think about having bang be optional
-  (var output# "command! ") ; parse each value in the attribute table ; most are just true/false values so they don't need an argument
-  (each [k v (pairs attributes)]
-    (match k
-      :buffer (set output# (.. output# "-buffer "))
-      :bang (set output# (.. output# "-bang "))
-      :bar (set output# (.. output# "-bar "))
-      :register (set output# (.. output# "-register "))
-      :complete (set output# (.. output# :-complete= (tostring v) " "))
-      :nargs (set output# (.. output# :-nargs= (tostring v) " "))
-      :range (do
-               (if (= v true)
-                   (set output# (.. output# "-range "))
-                   (set output# (.. output# :-range= (tostring v) " "))))
-      :addr (set output# (.. output# :-nargs= (tostring v)))))
-  (set output# (.. output# name " " vimscript))
-  `(do
-     (vim.api.nvim_command ,output#)))
-
-{: cre-command
- : def-command
- : del-command
- : do-command
- : do-viml
- : do-ex
- : com-
- : command-
- : command*-vim}
+{: cre-command : def-command : del-command : do-command : do-viml : do-ex}
