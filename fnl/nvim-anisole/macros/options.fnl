@@ -1,33 +1,50 @@
 ;;; Macro file for option management
 ;; [nfnl-macro]
 
-;; Private macros
-;; Macro -- get the scope of an option
-(fn get-scope [opt]
-  "Macro -- get the scope of an option"
-  (if (pcall vim.api.nvim_get_option_info2 opt {})
-      (. (vim.api.nvim_get_option_info2 opt {}) :scope)
-      false))
+(fn assert-arg [var# var-type# var-pos# macro#]
+  "FN -- Handle `assert-compile` simpler"
+  (if (= (type var-type#) :table)
+      (let [type-results# (do
+                            (local out# [])
+                            (each [_ v# (ipairs var-type#)]
+                              (if (= (type var#) v#)
+                                  (table.insert out# true)
+                                  false))
+                            out#)
+            possible-type-string# (do
+                                    (var out# "")
+                                    (each [_ v# (ipairs var-type#)]
+                                      (set out# (.. out# v# " or ")))
+                                    (set out# (string.sub out# 1 -5))
+                                    out#)]
+        (assert-compile (do
+                          (var truthy# false)
+                          (each [_ v# (ipairs type-results#)]
+                            (if v#
+                                (set truthy# true)))
+                          truthy#)
+                        (string.format "\"%s\" -- Expected %s for arg #%s, received %s"
+                                       (tostring macro#) possible-type-string#
+                                       var-pos# (type var#))))
+      (assert-compile (= (type var#) var-type#)
+                      (string.format "\"%s\" -- Expected %s for arg #%s, received %s"
+                                     (tostring macro#) var-type# var-pos#
+                                     (type var#)))))
 
 (fn scope [opt]
-  "Get the scope of an option"
+  "Gets the scope of an option"
   (let [opt# (tostring opt)]
     (. (vim.api.nvim_get_option_info2 opt# {}) :scope)))
 
-;; Macro set the value of an option based on its scope
-(fn set-option [option value scope]
-  "Macro set the value of an option based on its scope"
-  (match scope
-    :global `(vim.api.nvim_set_option ,option ,value)
-    :win `(vim.api.nvim_win_set_option 0 ,option ,value)
-    :buf `(vim.api.nvim_buf_set_option 0 ,option ,value)))
-
 (fn set-opt [option value ?flag]
-  "Macro -- set an option"
+  "Macro -- Sets an option
+@option: |object| or |string| # The option, can be written literally
+@value: |any| # The value of the option
+@?flag(optional): |string| # A flag (append, prepend, remove) for the option"
+  (assert-arg option [:string :table] 1 :set-opt)
   (if ?flag
       (do
-        (assert-compile (= (type ?flag) :string)
-                        (.. "Expected string, got " (type ?flag)) ?flag)
+        (assert-arg ?flag :string 3 :set-opt)
         (match ?flag
           :append (let [opt# (tostring option)]
                     `(: (. vim.opt ,opt#) :append ,value))
@@ -36,21 +53,24 @@
           :remove (let [opt# (tostring option)]
                     `(: (. vim.opt ,opt#) :remove ,value))
           _ (assert-compile nil
-                            (string.format "Expected append, prepend, or remove, got '%s'"
+                            (string.format "\"set-opt\" -- Expected append, prepend, or remove, got '%s'"
                                            ?flag)
                             ?flag)))
       (let [opt# (tostring option)]
         `(tset vim.opt ,opt# ,value))))
 
 (fn set-local-opt [option value ?flag]
-  "Macro -- set a local option"
+  "Macro -- set a local option
+@option: |object| or |string| # The option, can be written literally
+@value: |any| # The value of the option
+@?flag(optional): |string| # A flag (append, prepend, remove) for the option"
+  (assert-arg option [:string :table] 1 :set-local-opt)
   (assert-compile (or (= (scope option) :win) (= (scope option) :buf))
-                  (string.format "Expected local option, got %s option"
+                  (string.format "\"set-local-opt\" -- Expected local option, got %s option"
                                  (scope option)) option)
   (if ?flag
       (do
-        (assert-compile (= (type ?flag) :string)
-                        (.. "Expected string, got " (type ?flag)) ?flag)
+        (assert-arg ?flag :string 3 :set-local-opt)
         (match ?flag
           :append (let [opt# (tostring option)]
                     `(: (. vim.opt_local ,opt#) :append ,value))
@@ -59,21 +79,24 @@
           :remove (let [opt# (tostring option)]
                     `(: (. vim.opt_local ,opt#) :remove ,value))
           _ (assert-compile nil
-                            (string.format "Expected append, prepend, or remove, got '%s'"
+                            (string.format "\"set-local-opt\" -- Expected append, prepend, or remove, got '%s'"
                                            ?flag)
                             ?flag)))
       (let [opt# (tostring option)]
         `(tset vim.opt_local ,opt# ,value))))
 
 (fn set-global-opt [option value ?flag]
-  "Macro -- set a global option"
+  "Macro -- set a global option
+@option: |object| or |string| # The option, can be written literally
+@value: |any| # The value of the option
+@?flag(optional): |string| # A flag (append, prepend, remove) for the option"
+  (assert-arg option [:string :table] 1 :set-global-opt)
   (assert-compile (= (scope option) :global)
-                  (string.format "Expected global option, got %s option"
+                  (string.format "\"set-global-opt\" -- Expected global option, got %s option"
                                  (scope option)) option)
   (if ?flag
       (do
-        (assert-compile (= (type ?flag) :string)
-                        (.. "Expected string, got " (type ?flag)) ?flag)
+        (assert-arg ?flag :string 3 :set-global-opt)
         (match ?flag
           :append (let [opt# (tostring option)]
                     `(: (. vim.opt_global ,opt#) :append ,value))
@@ -82,7 +105,7 @@
           :remove (let [opt# (tostring option)]
                     `(: (. vim.opt_global ,opt#) :remove ,value))
           _ (assert-compile nil
-                            (string.format "Expected append, prepend, or remove, got '%s'"
+                            (string.format "\"set-global-opt\" -- Expected append, prepend, or remove, got '%s'"
                                            ?flag)
                             ?flag)))
       (let [opt# (tostring option)]
@@ -90,6 +113,10 @@
 
 (fn set-opt-auto [option value ?flag]
   "Macro -- set an option with auto scope
+@option: |object| or |string| # The option, can be written literally
+@value: |any| # The value of the option
+@?flag(optional): |string| # A flag (append, prepend, remove) for the option
+
 Generally, 'set' from Vim will try to use the global scope for anything.
 If you want a local scope you have to use 'setlocal'. This is generally
 not particularly clean, as you then have to remember what is what kind of
@@ -103,12 +130,10 @@ This macro is generally preferred when no specification is needed.
 However, since it sets local options its generally avoided for system wide configs."
   (when ?flag
     (do
-      (assert-compile (= (type ?flag) :string)
-                      (string.format "Expected string, got %s" (type ?flag))
-                      ?flag)
+      (assert-arg ?flag :string 3 :set-opt-auto)
       (assert-compile (or (= ?flag :append) (= ?flag :prepend)
                           (= ?flag :remove))
-                      (string.format "Expected append, prepend, or remove; got '%s'"
+                      (string.format "\"set-opt-auto\" -- Expected append, prepend, or remove; got '%s'"
                                      ?flag) ?flag)))
   (let [scope# (scope option)
         opt# (tostring option)]
@@ -124,15 +149,15 @@ However, since it sets local options its generally avoided for system wide confi
 
 (fn set-opts [options ?flag]
   "Macro -- plural of set-opt
-Takes key-value table of options"
+Takes key-value table of options
+@options: |key/val table| # The options, where the key is the option and val is the value
+@?flag(optional): |string| # A flag (append, prepend, remove) for the option"
   (when ?flag
     (do
-      (assert-compile (= (type ?flag) :string)
-                      (string.format "Expected string, got %s" (type ?flag))
-                      ?flag)
+      (assert-arg ?flag :string 3 :set-opts)
       (assert-compile (or (= ?flag :append) (= ?flag :prepend)
                           (= ?flag :remove))
-                      (string.format "Expected append, prepend, or remove; got '%s'"
+                      (string.format "\"set-opts\" -- Expected append, prepend, or remove; got '%s'"
                                      ?flag) ?flag)))
   (let [output# [] ;; Put keys and vals into sequential table
         ;; We sort the keys and then use the sorted keys to build the seq val table
@@ -178,15 +203,16 @@ Takes key-value table of options"
 
 (fn set-local-opts [options ?flag]
   "Macro -- plural of set-local-opt
+@options: |key/val table| # The options, where the key is the option and val is the value
+@?flag(optional): |string| # A flag (append, prepend, remove) for the option
+
 Takes key-value table of options"
   (when ?flag
     (do
-      (assert-compile (= (type ?flag) :string)
-                      (string.format "Expected string, got %s" (type ?flag))
-                      ?flag)
+      (assert-arg ?flag :string 3 :set-local-opts)
       (assert-compile (or (= ?flag :append) (= ?flag :prepend)
                           (= ?flag :remove))
-                      (string.format "Expected append, prepend, or remove; got '%s'"
+                      (string.format "\"set-local-opts\" -- Expected append, prepend, or remove; got '%s'"
                                      ?flag) ?flag)))
   (let [output# [] ;; Put keys and vals into sequential table
         ;; We sort the keys and then use the sorted keys to build the seq val table
@@ -213,7 +239,7 @@ Takes key-value table of options"
                 value# (. val# i#)]
             (assert-compile (or (= (scope option#) :win)
                                 (= (scope option#) :buf))
-                            (string.format "Expected local option, got %s option"
+                            (string.format "\"set-local-opts\" -- Expected local option, got %s option"
                                            (scope option#))
                             option#)
             ;; If at one, we are at the end of the recurse and can finish this call
@@ -237,15 +263,16 @@ Takes key-value table of options"
 
 (fn set-global-opts [options ?flag]
   "Macro -- plural of set-global-opt
+@options: |key/val table| # The options, where the key is the option and val is the value
+@?flag(optional): |string| # A flag (append, prepend, remove) for the option
+
 Takes key-value table of options"
   (when ?flag
     (do
-      (assert-compile (= (type ?flag) :string)
-                      (string.format "Expected string, got %s" (type ?flag))
-                      ?flag)
+      (assert-arg ?flag :string 3 :set-global-opts)
       (assert-compile (or (= ?flag :append) (= ?flag :prepend)
                           (= ?flag :remove))
-                      (string.format "Expected append, prepend, or remove; got '%s'"
+                      (string.format "\"set-global-opts\" -- Expected append, prepend, or remove; got '%s'"
                                      ?flag) ?flag)))
   (let [output# [] ;; Put keys and vals into sequential table
         ;; We sort the keys and then use the sorted keys to build the seq val table
@@ -271,7 +298,7 @@ Takes key-value table of options"
                 ; each option is a table, name is first value
                 value# (. val# i#)]
             (assert-compile (= (scope option#) :global)
-                            (string.format "Expected global option, got %s option"
+                            (string.format "\"set-global-opts\" -- Expected global option, got %s option"
                                            (scope option#))
                             option#)
             ;; If at one, we are at the end of the recurse and can finish this call
@@ -295,6 +322,9 @@ Takes key-value table of options"
 
 (fn set-opts-auto [options ?flag]
   "Macro -- plural of set-opt-auto
+@options: |key/val table| # The options, where the key is the option and val is the value
+@?flag(optional): |string| # A flag (append, prepend, remove) for the option
+
 Takes key-value table of options
 Generally, 'set' from Vim will try to use the global scope for anything.
 If you want a local scope you have to use 'setlocal'. This is generally
@@ -309,12 +339,10 @@ This macro is generally preferred when no specification is needed.
 However, since it sets local options its generally avoided for system wide configs."
   (when ?flag
     (do
-      (assert-compile (= (type ?flag) :string)
-                      (string.format "Expected string, got %s" (type ?flag))
-                      ?flag)
+      (assert-arg ?flag :string 3 :set-opts-auto)
       (assert-compile (or (= ?flag :append) (= ?flag :prepend)
                           (= ?flag :remove))
-                      (string.format "Expected append, prepend, or remove; got '%s'"
+                      (string.format "\"set-opts-auto\" -- Expected append, prepend, or remove; got '%s'"
                                      ?flag) ?flag)))
   (let [output# [] ;; Put keys and vals into sequential table
         ;; We sort the keys and then use the sorted keys to build the seq val table
@@ -374,12 +402,17 @@ However, since it sets local options its generally avoided for system wide confi
     (recurse-output key# val# size#)))
 
 (fn get-opt [option]
-  "Macro -- get an option's value"
+  "Macro -- get an option's value
+@option: |object| or |string| # The option, can be written literally"
   (let [opt# (tostring option)]
     `(: (. vim.opt ,opt#) :get)))
 
 (fn set-var [scope variable value]
   "Macro -- set a Vim variable
+@scope: |string| # The scope of the variable
+@variable: |object| or |string| # The variable itself. Can be string or literal object
+@value: |any| # The value of the option
+
 For b, w, and t scope, they can be indexed like (. b 1) for their
 Lua table equivalent. The other scopes can't take an index and will
 return an error."
@@ -390,17 +423,22 @@ return an error."
               index# (. scope 3)]
           (assert-compile (or (= matched-scope# :b) (= matched-scope# :w)
                               (= matched-scope# :t))
-                          (string.format "Expected b, w, or t scope; got %s"
+                          (string.format "\"set-var\" -- Expected b, w, or t scope; got %s"
                                          matched-scope#)
                           matched-scope#)
           `(tset (. (. vim ,matched-scope#) ,index#) ,var# ,value))
         (let [scope# (tostring scope)]
           (assert-compile (or (= scope# :g) (= scope# :b) (= scope# :w)
-                              (= scope# :t) (= scope# :v) (= scope# :env)))
+                              (= scope# :t) (= scope# :v) (= scope# :env))
+                          (string.format "\"set-var\" -- Expected b, w, or t scope; got %s"
+                                         scope#)
+                          scope#)
           `(tset (. vim ,scope#) ,var# ,value)))))
 
 (fn set-vars [scope variables]
-  "Macro -- plural of set-var for one scope"
+  "Macro -- plural of set-var for one scope
+@scope: |string| # The scope of the variable
+@variables: |key/val table| # The variables, where the key is the variable and val is the value"
   (let [output# [] ;; Put keys and vals into sequential table
         ;; We sort the keys and then use the sorted keys to build the seq val table
         ;; This helps keep the macro consistent in the compiled Lua
@@ -436,7 +474,9 @@ return an error."
     (recurse-output key# val# size#)))
 
 (fn get-var [scope variable]
-  "Macro -- get the value of a Vim variable"
+  "Macro -- get the value of a Vim variable
+@scope: |string| # The scope of the variable
+@variables: |key/val table| # The variables, where the key is the variable and val is the value"
   (let [var# (tostring variable)]
     (if (list? scope)
         ;; need to destruct the indexed list and inject the appropriate table
@@ -444,100 +484,27 @@ return an error."
               index# (. scope 3)]
           (assert-compile (or (= matched-scope# :b) (= matched-scope# :w)
                               (= matched-scope# :t))
-                          (string.format "Expected b, w, or t scope; got %s"
+                          (string.format "\"get-var\" -- Expected b, w, or t scope; got %s"
                                          matched-scope#)
                           matched-scope#)
           `(. (. (. vim ,matched-scope#) ,index#) ,var#))
         (let [scope# (tostring scope)]
           (assert-compile (or (= scope# :g) (= scope# :b) (= scope# :w)
-                              (= scope# :t) (= scope# :v) (= scope# :env)))
+                              (= scope# :t) (= scope# :v) (= scope# :env))
+                          (string.format "\"get-var\" -- Expected b, w, or t scope; got %s"
+                                         scope#)
+                          scope#)
           `(. (. vim ,scope#) ,var#)))))
 
-;; Macro -- set a global option
-(fn setg- [option value]
-  "Macro -- set a global option"
-  (let [option (tostring option)]
-    `(tset vim.opt_global ,option ,value)))
-
-;; Macro -- set a local option
-(fn setl- [option value]
-  "Macro -- set a local option"
-  (let [option (tostring option)]
-    `(tset vim.opt_local ,option ,value)))
-
-;; Macro -- set a window option
-(fn setw- [option value]
-  "Macro -- set a window option"
-  (let [option (tostring option)]
-    (set-option option value :win)))
-
-;; Macro -- set an option generically if possible
-(fn set- [option value]
-  "Macro -- set an option generically if possible"
-  (let [option (tostring option)
-        value value
-        scope# (get-scope option)]
-    (set-option option value scope#)))
-
-;; Macro -- append a value to an option
-(fn seta- [option value]
-  "Macro -- append a value to an option"
-  (let [option (tostring option)]
-    `(tset vim.opt ,option (+ (. vim.opt ,option) ,value))))
-
-;; Macro -- prepend a value to an option
-(fn setp- [option value]
-  "Macro -- prepend a value to an option"
-  (let [option (tostring option)]
-    `(tset vim.opt ,option (^ (. vim.opt ,option) ,value))))
-
-;; Macro -- remove a value from an option
-(fn setr- [option value]
-  "Macro -- remove a value from an option"
-  (let [option (tostring option)]
-    `(tset vim.opt ,option (- (. vim.opt ,option) ,value))))
-
-;; Macro -- set a variable of some scope
-;; @scope -- a character string of the scope
-;; @obj -- the variable as a string
-;; @... -- the options
-(fn let- [scope obj ...]
-  "Macro -- set a variable of some scope"
-  (let [scope (tostring scope)
-        obj (tostring obj)
-        output [...]
-        value []]
-    (var value "") ; if number of operands is 1
-    (if (= (length output) 1 (each [key val (pairs output)] ; set the output to just the value of the operands
-                               (set value val)))
-        (> (length output) 1 ; else set the output to the whole table
-           (do
-             (set value output))))
-    (match scope
-      :g `(tset vim.g ,obj ,value)
-      :b `(tset vim.b ,obj ,value)
-      :w `(tset vim.w ,obj ,value)
-      :t `(tset vim.t ,obj ,value)
-      :v `(tset vim.v ,obj ,value)
-      :env `(tset vim.env ,obj ,value))))
-
-{: set-opt
- : set-local-opt
+{: get-opt
+ : get-var
  : set-global-opt
+ : set-global-opts
+ : set-local-opt
+ : set-local-opts
  : set-opt-auto
  : set-opts
- : set-local-opts
- : set-global-opts
  : set-opts-auto
- : get-opt
  : set-var
  : set-vars
- : get-var
- : let-
- : set-
- : setl-
- : setg-
- : seta-
- : setp-
- : setr-
- : setw-}
+ : set-opt}
