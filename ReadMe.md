@@ -454,59 +454,59 @@ Gets a vim variable. Supports scope indexing. When using a scope index, returns 
 ### autocommands
 Handles dealing with autocommands and autogroups.
 
-#### `def-aug-`
+#### `def-augroup!`
 Defines an autogroup to be returned for a variable.
 
 ##### Syntax
 ```fennel
-(local augroup (def-aug- "GroupName" true))
+(local augroup (def-augroup "GroupName" true))
 ; expansion
 (local augroup (vim.api.nvim_create_augroup "GroupName" {:clear false}))
 ```
 The boolean is optional. It inverts the functionality of `nvim_create_augroup`. If set to false or nil (i.e. no argument after the name), then the default behavior of `nvim_create_augroup` will be used. This means augroups will clear upon each call.
 
-#### `auc-`
+#### `cre-autocmd!`
 Creates an autocommand. It is not designed to be accepted by a variable for manipulation. Like maps and user command macros, it can take an optional description and options table. The events, pattern, and callback are required.
 
 ##### Syntax
 ```fennel
 ; no description or options table, lua callback
-(auc- :Event "*.file" (fn [] (print "callback")))
+(cre-autocmd! :Event "*.file" (fn [] (print "callback")))
 ; expansion
 (vim.api.nvim_create_autocmd :Event {:pattern "*.file" :callback (fn [] (print "callback"))})
 
 ; description, no options table, vimscript callback
-(auc- :Event "*.file" "echo 'command'" "Autocmd description")
+(cre-autocmd! :Event "*.file" "echo 'command'" "Autocmd description")
 ; expansion
 (vim.api.nvim_create_autocmd :Event {:pattern "*.file" :command "echo 'command'" :desc "Autocmd description"})
 
 ; no description, options table, called lua callback
 (fn [] auto-callback (print "called function"))
-(auc- :Event "*.file" auto-callback {:buffer 0})
+(cre-autocmd! :Event "*.file" auto-callback {:buffer 0})
 ; expansion
 (vim.api.nvim_create_autocmd :Event {:pattern "*.file" :callback auto-callback :buffer 0})
 
 ; description and options table, called lua callback
 (fn [] auto-callback (print "called function"))
-(auc- :Event "*.file" auto-callback "Autocmd description" {:buffer 0})
+(cre-autocmd! :Event "*.file" auto-callback "Autocmd description" {:buffer 0})
 ; expansion
 (vim.api.nvim_create_autocmd :Event {:pattern "*.file" :callback auto-callback :desc "Autocmd description" :buffer 0})
 ```
 
-#### `aug-`
-Absorbs `auc-` calls within its list, and injects the group throughout each. Only accepts `auc-` after the group variable.
+#### `do-augroup`
+Absorbs `cre-autocmd!` calls within its list, and injects the group throughout each. Only accepts `cre-autocmd!` after the group variable.
 
 ##### Syntax
 ```fennel
-(aug- group
-  (auc- :Event "*" (fn [] (print "callback"))))
-; expansion minus auc-
-(auc- :Event "*" (fn [] (print "callback")) {:group group})
+(do-augroup group
+  (cre-autocmd! :Event "*" (fn [] (print "callback"))))
+; expansion minus cre-autocmd!
+(cre-autocmd! :Event "*" (fn [] (print "callback")) {:group group})
 ; full expansion
 (vim.api.nvim_create_autocmd :Event {:pattern "*" :callback (fn [] (print "callback")) :group group})
 ```
 
-The group must have been previously defined, it cannot be passed through with this macro. For additional notice, only `auc-` calls are accepted. Attempting to use anything else will result in a compile-time error. This is *not* a way to be programmatic about autocommand creation, it is only equivalent to the `->` threading macros in function. Any programmatic work of autocommands must be done in a list outside of this scope.
+The group must have been previously defined, it cannot be passed through with this macro. For additional notice, only `autocmd-` calls are accepted. Attempting to use anything else will result in a compile-time error. This is *not* a way to be programmatic about autocommand creation, it is only equivalent to the `->` threading macros in function. Any programmatic work of autocommands must be done in a list outside of this scope.
 
 #### `cle-autocmd!`
 Clears an autocommand using `vim.api.nvim_clear_autocommands`.
@@ -553,15 +553,15 @@ Takes the appropriate type, single and plural, and only that type and gets the a
 (vim.api.nvim_get_autocmds {:event "Event"})
 ```
 
-#### `del-aug!`
+#### `del-augroup!`
 Deletes an autogroup by name or by id.
 
 ##### Syntax
 ```fennel
-(del-aug! :Group)
+(del-augroup! :Group)
 (vim.api.nvim_del_augroup_by_name "Group")
 
-(del-aug! 0)
+(del-augroup! 0)
 (vim.api.nvim_del_augroup_by_id 0)
 ```
 
@@ -580,17 +580,17 @@ Fires an autocmd using `vim.api.nvim_exec_autocmds`.
 #### Examples
 ```fennel
 ; macro form
-(let [highlight (def-aug- "highlightOnYank")]
-  (aug- highlight
-        (auc- "TextYankPost" :* 
+(let [highlight (def-augroup "highlightOnYank")]
+  (do-augroup highlight
+        (autocmd- "TextYankPost" :* 
               (fn [] ((. (require :vim.highlight) :on_yank)))
               "Highlight yank region")))
-(let [terminal (def-aug- "terminalSettings")]
-  (aug- terminal
-   (auc- "TermOpen" :* (fn [] (setl- number false)) "No number")
-   (auc- "TermOpen" :* (fn [] (setl- relativenumber false)) "No relative number")
-   (auc- "TermOpen" :* (fn [] (setl- spell false)) "No spell")
-   (auc- "TermOpen" :* (fn [] (setl- bufhidden :hide)) "Bufhidden")))
+(let [terminal (def-augroup "terminalSettings")]
+  (do-augroup terminal
+   (cre-autocmd! "TermOpen" :* (fn [] (setl- number false)) "No number")
+   (cre-autocmd! "TermOpen" :* (fn [] (setl- relativenumber false)) "No relative number")
+   (cre-autocmd! "TermOpen" :* (fn [] (setl- spell false)) "No spell")
+   (cre-autocmd! "TermOpen" :* (fn [] (setl- bufhidden :hide)) "Bufhidden")))
 
 ; expansion
 (let [highlight (vim.api.nvim_create_augroup "highlightOnYank" {:clear true})]
