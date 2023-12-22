@@ -38,30 +38,32 @@
 @callback: |function| or |string| # The function or vimscript that gets called on fire of autocmd
 @desc: |string| # Description of autocmd
 @args: |opt table| # Table of options for `vim.api.nvim_create_autocmd`"
+
   (assert-arg events [:string :table] 1 :cre-autocmd!)
   (assert-arg pattern [:string :table] 2 :cre-autocmd!)
   (assert-arg callback [:table :function :string] 3 :cre-autocmd!)
   (assert-arg desc :string 4 :cre-autocmd!)
   (assert-arg args :table 5 :cre-autocmd!)
+
   (let [opts# {}
         call-type# (if (= (type callback) :string) :command :callback)] ; if no desc string, just insert that table
     ;; if a desc string, add them all to the opts table
     (tset opts# :desc desc)
     (tset opts# call-type# callback)
     (tset opts# :pattern pattern)
-    (each [key val (pairs args)]
-      (tset opts# key val))
+    (each [k# v# (pairs args)]
+      (tset opts# k# v#))
     `(vim.api.nvim_create_autocmd ,events ,opts#)))
 
 
-(fn def-augroup! [name no-clear?]
+(fn def-augroup! [name ?no-clear]
   "Macro -- Defines an auto group and returns the id
 @name: |string| # Name of group
-@no-clear?(optional): |boolean| # If true, don't clear out group. Opposite of default"
+@?no-clear(optional): |boolean| # If true, don't clear out group. Opposite of default"
   (assert-arg name :string 1 :def-augroup!)
-  (when no-clear?
-    (assert-arg no-clear? :boolean 2 :def-augroup!))
-  (if no-clear?
+  (when ?no-clear
+    (assert-arg ?no-clear :boolean 2 :def-augroup!))
+  (if ?no-clear
       `(vim.api.nvim_create_augroup ,name {:clear true})
       `(vim.api.nvim_create_augroup ,name {:clear false})))
 

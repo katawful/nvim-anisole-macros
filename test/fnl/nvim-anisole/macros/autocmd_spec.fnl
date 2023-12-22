@@ -24,11 +24,11 @@
 
 (describe "Define autogroup macro:"
           (fn []
-            (it "def-augroup! without no-clear?"
+            (it "def-augroup! without ?no-clear"
                 (fn []
                   (assert.are.same "(vim.api.nvim_create_augroup \"Test\" {:clear false})"
                                    (macrodebug (auto.def-augroup! :Test) true))))
-            (it "def-augroup! with no-clear?"
+            (it "def-augroup! with ?no-clear"
                 (fn []
                   (assert.are.same "(vim.api.nvim_create_augroup \"Test\" {:clear true})"
                                    (macrodebug (auto.def-augroup! :Test true)

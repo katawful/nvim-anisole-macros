@@ -27,14 +27,14 @@ local function _7_()
     end
     return assert.are.same("(vim.api.nvim_create_augroup \"Test\" {:clear false})", _9_())
   end
-  it("def-augroup! without no-clear?", _8_)
+  it("def-augroup! without ?no-clear", _8_)
   local function _10_()
     local function _11_()
       return "(vim.api.nvim_create_augroup \"Test\" {:clear true})"
     end
     return assert.are.same("(vim.api.nvim_create_augroup \"Test\" {:clear true})", _11_())
   end
-  return it("def-augroup! with no-clear?", _10_)
+  return it("def-augroup! with ?no-clear", _10_)
 end
 describe("Define autogroup macro:", _7_)
 local function _12_()
