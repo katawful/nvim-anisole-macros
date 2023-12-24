@@ -31,9 +31,10 @@
                                      (tostring macro#) var-type# var-pos#
                                      (type var#)))))
 
-(lambda set-map [modes lhs rhs desc ?args]
+(lambda cre-map [modes lhs rhs desc ?args]
   "Macro -- Creates a recursive map across multiple modes
-@modes: |string| or |seq table| # String or seq table of strings corresponding to modes
+@modes: |string| or |seq table| # String or seq table of strings corresponding
+                                  to modes
 @lhs: |string| # Left hand of keymap
 @rhs: |string| or |function| or |table # Right hand of keymap
 @desc: |string| # Description of keymap
@@ -51,11 +52,12 @@
         (tset opts# key val)))
     `(vim.keymap.set ,modes ,lhs ,rhs ,opts#)))
 
-(lambda set-maps [modes ...]
+(lambda cre-maps [modes ...]
   "Macro -- Creates a recursive map across multiple modes
-@modes: |string| or |seq table| # String or seq table of strings corresponding to modes
-@...: Stored as sequential tables, each table is the arguments of `set-map`
-      minus the `modes` argument"
+@modes: |string| or |seq table| # String or seq table of strings corresponding
+                                  to modes
+@... # Stored as sequential tables, each table is the arguments of `set-map`
+       minus the `modes` argument"
   (assert-arg modes [:string :table] 1 :set-map)
   (let [maps# [...]
         size# (length maps#)]
@@ -74,12 +76,12 @@
             ;; If at one, end of recurse. Finish macro
             (if (= size# i#)
                 `(do
-                   ,(set-map modes lhs# rhs# desc# args#)))
+                   ,(cre-map modes lhs# rhs# desc# args#)))
             `(do
-               ,(set-map modes lhs# rhs# desc# args#)
+               ,(cre-map modes lhs# rhs# desc# args#)
                ,(recurse-output map# (+ i# 1))))))
 
     (when (> size# 0)
       (recurse-output maps# 1))))
 
-{: set-map : set-maps}
+{: cre-map : cre-maps}
