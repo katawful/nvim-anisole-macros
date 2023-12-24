@@ -1,432 +1,85 @@
 ;;; Macro file for key maps
 ;; [nfnl-macro]
 
-;; Macro -- create a normal mode map
-;; Has 3 outputs
-;; 1 -- No description, but opts table
-;; 2 -- Description and optional opts table
-;; 3 -- Just lhs and rhs
-;; @lhs -- left hand map, must be a string
-;; @rhs -- right hand map, can be whatever
-;; @desc -- description, or opts table if no description
-;; @args -- opts table when description is used
-(fn nno- [lhs rhs desc args]
-  "Macro -- create a normal mode map"
+(fn assert-arg [var# var-type# var-pos# macro#]
+  "FN -- Handle `assert-compile` simpler"
+  (if (= (type var-type#) :table)
+      (let [type-results# (do
+                            (local out# [])
+                            (each [_ v# (ipairs var-type#)]
+                              (if (= (type var#) v#)
+                                  (table.insert out# true)
+                                  false))
+                            out#)
+            possible-type-string# (do
+                                    (var out# "")
+                                    (each [_ v# (ipairs var-type#)]
+                                      (set out# (.. out# v# " or ")))
+                                    (set out# (string.sub out# 1 -5))
+                                    out#)]
+        (assert-compile (do
+                          (var truthy# false)
+                          (each [_ v# (ipairs type-results#)]
+                            (if v#
+                                (set truthy# true)))
+                          truthy#)
+                        (string.format "\"%s\" -- Expected %s for arg #%s, received %s"
+                                       (tostring macro#) possible-type-string#
+                                       var-pos# (type var#))))
+      (assert-compile (= (type var#) var-type#)
+                      (string.format "\"%s\" -- Expected %s for arg #%s, received %s"
+                                     (tostring macro#) var-type# var-pos#
+                                     (type var#)))))
+
+(lambda set-map [modes lhs rhs desc ?args]
+  "Macro -- Creates a recursive map across multiple modes
+@modes: |string| or |seq table| # String or seq table of strings corresponding to modes
+@lhs: |string| # Left hand of keymap
+@rhs: |string| or |function| or |table # Right hand of keymap
+@desc: |string| # Description of keymap
+@?args(optional): |opt table| # Opts table for vim.keymap.set"
+  (assert-arg modes [:string :table] 1 :set-map)
+  (assert-arg lhs :string 2 :set-map)
+  (assert-arg rhs [:string :function :table] 3 :set-map)
+  (assert-arg desc :string 4 :set-map)
+  (when ?args
+    (assert-arg ?args :table 5 :set-map))
   (let [opts# {}]
-    ;; if no desc string or symbol, just insert that table
-    (if (and (= (type desc) :table) (= args nil)
-             (not= (type (?. desc 1)) :string))
-        (do
-          `(vim.keymap.set :n ,lhs ,rhs ,desc))
-        ;; If a desc string or symbol, add them all to the opts table
-        ;; Note: This is a bit hacky, it basically just assumes that the symbol isn't
-        ;; --a table by itself. *My* assumption with this is that anything that
-        ;; --isn't a table symbol should be a variable symbol that returns a string.
-        ;; I should fix this at some point
-        (or (= (type (?. desc 1)) :string) (= (type desc) :string))
-        (do
-          (tset opts# :desc desc) ; make sure to add the opts table
-          (if (not= args nil)
-              (each [key val (pairs args)]
-                (tset opts# key val)))
-          `(vim.keymap.set :n ,lhs ,rhs ,opts#)) ; no additional options or description
-        (do
-          `(vim.keymap.set :n ,lhs ,rhs)))))
+    (tset opts# :desc desc)
+    (when ?args
+      (each [key val (pairs ?args)]
+        (tset opts# key val)))
+    `(vim.keymap.set ,modes ,lhs ,rhs ,opts#)))
 
-;; Macro -- create an insert mode map
-;; Has 3 outputs
-;; 1 -- No description, but opts table
-;; 2 -- Description and optional opts table
-;; 3 -- Just lhs and rhs
-;; @lhs -- left hand map, must be a string
-;; @rhs -- right hand map, can be whatever
-;; @desc -- description, or opts table if no description
-;; @args -- opts table when description is used
-(fn ino- [lhs rhs desc args]
-  "Macro -- create a insert mode map"
-  (let [opts# {}]
-    ;; if no desc string or symbol, just insert that table
-    (if (and (= (type desc) :table) (= args nil)
-             (not= (type (?. desc 1)) :string))
-        (do
-          `(vim.keymap.set :i ,lhs ,rhs ,desc))
-        ;; If a desc string or symbol, add them all to the opts table
-        ;; Note: This is a bit hacky, it basically just assumes that the symbol isn't
-        ;; --a table by itself. *My* assumption with this is that anything that
-        ;; --isn't a table symbol should be a variable symbol that returns a string.
-        ;; I should fix this at some point
-        (or (= (type (?. desc 1)) :string) (= (type desc) :string))
-        (do
-          (tset opts# :desc desc) ; make sure to add the opts table
-          (if (not= args nil)
-              (each [key val (pairs args)]
-                (tset opts# key val)))
-          `(vim.keymap.set :i ,lhs ,rhs ,opts#)) ; no additional options or description
-        (do
-          `(vim.keymap.set :i ,lhs ,rhs)))))
+(lambda set-maps [modes ...]
+  "Macro -- Creates a recursive map across multiple modes
+@modes: |string| or |seq table| # String or seq table of strings corresponding to modes
+@...: Stored as sequential tables, each table is the arguments of `set-map`
+      minus the `modes` argument"
+  (assert-arg modes [:string :table] 1 :set-map)
+  (let [maps# [...]
+        size# (length maps#)]
+    (assert-compile (> size# 0)
+                    (string.format "\"set-maps\" -- Expected a table of keymaps, received nil")
+                    maps#)
+    ;; Recurse through macro to make static, starting from first element
 
-;; Macro -- create a visual mode map
-;; Has 3 outputs
-;; 1 -- No description, but opts table
-;; 2 -- Description and optional opts table
-;; 3 -- Just lhs and rhs
-;; @lhs -- left hand map, must be a string
-;; @rhs -- right hand map, can be whatever
-;; @desc -- description, or opts table if no description
-;; @args -- opts table when description is used
-(fn vno- [lhs rhs desc args]
-  "Macro -- create a visual mode map"
-  (let [opts# {}]
-    ;; if no desc string or symbol, just insert that table
-    (if (and (= (type desc) :table) (= args nil)
-             (not= (type (?. desc 1)) :string))
-        (do
-          `(vim.keymap.set :v ,lhs ,rhs ,desc))
-        ;; If a desc string or symbol, add them all to the opts table
-        ;; Note: This is a bit hacky, it basically just assumes that the symbol isn't
-        ;; --a table by itself. *My* assumption with this is that anything that
-        ;; --isn't a table symbol should be a variable symbol that returns a string.
-        ;; I should fix this at some point
-        (or (= (type (?. desc 1)) :string) (= (type desc) :string))
-        (do
-          (tset opts# :desc desc) ; make sure to add the opts table
-          (if (not= args nil)
-              (each [key val (pairs args)]
-                (tset opts# key val)))
-          `(vim.keymap.set :v ,lhs ,rhs ,opts#)) ; no additional options or description
-        (do
-          `(vim.keymap.set :v ,lhs ,rhs)))))
+    (fn recurse-output [map# i#]
+      (if (>= size# i#)
+          (let [current-map# (. map# i#)
+                lhs# (. current-map# 1)
+                rhs# (. current-map# 2)
+                desc# (. current-map# 3)
+                args# (?. current-map# 4)]
+            ;; If at one, end of recurse. Finish macro
+            (if (= size# i#)
+                `(do
+                   ,(set-map modes lhs# rhs# desc# args#)))
+            `(do
+               ,(set-map modes lhs# rhs# desc# args#)
+               ,(recurse-output map# (+ i# 1))))))
 
-;; Macro -- create a terminal mode map
-;; Has 3 outputs
-;; 1 -- No description, but opts table
-;; 2 -- Description and optional opts table
-;; 3 -- Just lhs and rhs
-;; @lhs -- left hand map, must be a string
-;; @rhs -- right hand map, can be whatever
-;; @desc -- description, or opts table if no description
-;; @args -- opts table when description is used
-(fn tno- [lhs rhs desc args]
-  "Macro -- create a terminal mode map"
-  (let [opts# {}]
-    ;; if no desc string or symbol, just insert that table
-    (if (and (= (type desc) :table) (= args nil)
-             (not= (type (?. desc 1)) :string))
-        (do
-          `(vim.keymap.set :t ,lhs ,rhs ,desc))
-        ;; If a desc string or symbol, add them all to the opts table
-        ;; Note: This is a bit hacky, it basically just assumes that the symbol isn't
-        ;; --a table by itself. *My* assumption with this is that anything that
-        ;; --isn't a table symbol should be a variable symbol that returns a string.
-        ;; I should fix this at some point
-        (or (= (type (?. desc 1)) :string) (= (type desc) :string))
-        (do
-          (tset opts# :desc desc) ; make sure to add the opts table
-          (if (not= args nil)
-              (each [key val (pairs args)]
-                (tset opts# key val)))
-          `(vim.keymap.set :t ,lhs ,rhs ,opts#)) ; no additional options or description
-        (do
-          `(vim.keymap.set :t ,lhs ,rhs)))))
+    (when (> size# 0)
+      (recurse-output maps# 1))))
 
-;; Macro -- create a command-line mode map
-;; Has 3 outputs
-;; 1 -- No description, but opts table
-;; 2 -- Description and optional opts table
-;; 3 -- Just lhs and rhs
-;; @lhs -- left hand map, must be a string
-;; @rhs -- right hand map, can be whatever
-;; @desc -- description, or opts table if no description
-;; @args -- opts# table when description is used
-(fn cno- [lhs rhs desc args]
-  "Macro -- create a command-line mode map"
-  (let [opts# {}]
-    ;; if no desc string or symbol, just insert that table
-    (if (and (= (type desc) :table) (= args nil)
-             (not= (type (?. desc 1)) :string))
-        (do
-          `(vim.keymap.set :c ,lhs ,rhs ,desc))
-        ;; If a desc string or symbol, add them all to the opts table
-        ;; Note: This is a bit hacky, it basically just assumes that the symbol isn't
-        ;; --a table by itself. *My* assumption with this is that anything that
-        ;; --isn't a table symbol should be a variable symbol that returns a string.
-        ;; I should fix this at some point
-        (or (= (type (?. desc 1)) :string) (= (type desc) :string))
-        (do
-          (tset opts# :desc desc) ; make sure to add the opts table
-          (if (not= args nil)
-              (each [key val (pairs args)]
-                (tset opts# key val)))
-          `(vim.keymap.set :c ,lhs ,rhs ,opts#)) ; no additional options or description
-        (do
-          `(vim.keymap.set :c ,lhs ,rhs)))))
-
-;; Macro -- create a operator mode map
-;; Has 3 outputs
-;; 1 -- No description, but opts table
-;; 2 -- Description and optional opts table
-;; 3 -- Just lhs and rhs
-;; @lhs -- left hand map, must be a string
-;; @rhs -- right hand map, can be whatever
-;; @desc -- description, or opts table if no description
-;; @args -- opts table when description is used
-(fn ono- [lhs rhs desc args]
-  "Macro -- create a operator mode map"
-  (let [opts# {}]
-    ;; if no desc string or symbol, just insert that table
-    (if (and (= (type desc) :table) (= args nil)
-             (not= (type (?. desc 1)) :string))
-        (do
-          `(vim.keymap.set :o ,lhs ,rhs ,desc))
-        ;; If a desc string or symbol, add them all to the opts table
-        ;; Note: This is a bit hacky, it basically just assumes that the symbol isn't
-        ;; --a table by itself. *My* assumption with this is that anything that
-        ;; --isn't a table symbol should be a variable symbol that returns a string.
-        ;; I should fix this at some point
-        (or (= (type (?. desc 1)) :string) (= (type desc) :string))
-        (do
-          (tset opts# :desc desc) ; make sure to add the opts table
-          (if (not= args nil)
-              (each [key val (pairs args)]
-                (tset opts# key val)))
-          `(vim.keymap.set :o ,lhs ,rhs ,opts#)) ; no additional options or description
-        (do
-          `(vim.keymap.set :o ,lhs ,rhs)))))
-
-;; Macro -- create a recursive map across multiple modes
-;; Has 3 outputs
-;; 1 -- No description, but opts table
-;; 2 -- Description and optional opts table
-;; 3 -- Just lhs and rhs
-;; @modes -- sequential table of modes desired
-;; @lhs -- left hand map, must be a string
-;; @rhs -- right hand map, can be whatever
-;; @desc -- description, or opts table if no description
-;; @args -- opts table when description is used
-(fn map- [modes lhs rhs desc args]
-  "Macro -- create a recursive map across multiple modes"
-  (let [opts# {}] ; if no desc string, just insert that table
-    (if (= (type desc) :table)
-        (do
-          (tset desc :remap true)
-          `(vim.keymap.set ,modes ,lhs ,rhs ,desc)) ; if a desc string, add them all to the opts# table
-        (= (type desc) :string)
-        (do
-          (tset opts# :desc desc)
-          (tset opts# :remap true) ; make sure to add the opts# table
-          (if (not= args nil)
-              (each [key val (pairs args)]
-                (tset opts# key val)))
-          `(vim.keymap.set ,modes ,lhs ,rhs ,opts#)) ; no additional options or description
-        (do
-          (tset opts# :remap true)
-          `(vim.keymap.set ,modes ,lhs ,rhs ,opts#)))))
-
-;; Macro -- create a map across multiple modes
-;; Has 3 outputs
-;; 1 -- No description, but opts table
-;; 2 -- Description and optional opts table
-;; 3 -- Just lhs and rhs
-;; @modes -- sequential table of modes desired
-;; @lhs -- left hand map, must be a string
-;; @rhs -- right hand map, can be whatever
-;; @desc -- description, or opts table if no description
-;; @args -- opts table when description is used
-(fn nomap- [modes lhs rhs desc args]
-  "Macro -- create a map across multiple modes"
-  (let [opts# {}] ; if no desc string, just insert that table
-    (if (= (type desc) :table)
-        (do
-          `(vim.keymap.set ,modes ,lhs ,rhs ,desc)) ; if a desc string, add them all to the opts# table
-        (= (type desc) :string)
-        (do
-          (tset opts# :desc desc) ; make sure to add the opts# table
-          (if (not= args nil)
-              (each [key val (pairs args)]
-                (tset opts# key val)))
-          `(vim.keymap.set ,modes ,lhs ,rhs ,opts#)) ; no additional options or description
-        (do
-          `(vim.keymap.set ,modes ,lhs ,rhs)))))
-
-;; Macro -- create a recursive normal mode map
-;; Has 3 outputs
-;; 1 -- No description, but opts table
-;; 2 -- Description and optional opts table
-;; 3 -- Just lhs and rhs
-;; @lhs -- left hand map, must be a string
-;; @rhs -- right hand map, can be whatever
-;; @desc -- description, or opts table if no description
-;; @args -- opts table when description is used
-(fn nm- [lhs rhs desc args]
-  "Macro -- create a recursive normal mode map"
-  (let [opts# {}] ; if no desc string, just insert that table
-    (if (= (type desc) :table)
-        (do
-          (tset desc :remap true)
-          `(vim.keymap.set :n ,lhs ,rhs ,desc)) ; if a desc string, add them all to the opts# table
-        (= (type desc) :string)
-        (do
-          (tset opts# :desc desc)
-          (tset opts# :remap true) ; make sure to add the opts# table
-          (if (not= args nil)
-              (each [key val (pairs args)]
-                (tset opts# key val)))
-          `(vim.keymap.set :n ,lhs ,rhs ,opts#)) ; no additional options or description
-        (do
-          (tset opts# :remap true)
-          `(vim.keymap.set :n ,lhs ,rhs opts#)))))
-
-;; Macro -- create a recursive operator mode map
-;; Has 3 outputs
-;; 1 -- No description, but opts table
-;; 2 -- Description and optional opts table
-;; 3 -- Just lhs and rhs
-;; @lhs -- left hand map, must be a string
-;; @rhs -- right hand map, can be whatever
-;; @desc -- description, or opts table if no description
-;; @args -- opts table when description is used
-(fn om- [lhs rhs desc args]
-  "Macro -- create a recursive operator mode map"
-  (let [opts# {}] ; if no desc string, just insert that table
-    (if (= (type desc) :table)
-        (do
-          (tset desc :remap true)
-          `(vim.keymap.set :o ,lhs ,rhs ,desc)) ; if a desc string, add them all to the opts# table
-        (= (type desc) :string)
-        (do
-          (tset opts# :desc desc)
-          (tset opts# :remap true) ; make sure to add the opts# table
-          (if (not= args nil)
-              (each [key val (pairs args)]
-                (tset opts# key val)))
-          `(vim.keymap.set :o ,lhs ,rhs ,opts#)) ; no additional options or description
-        (do
-          (tset opts# :remap true)
-          `(vim.keymap.set :o ,lhs ,rhs opts#)))))
-
-;; Macro -- create a recursive visual mode map
-;; Has 3 outputs
-;; 1 -- No description, but opts table
-;; 2 -- Description and optional opts table
-;; 3 -- Just lhs and rhs
-;; @lhs -- left hand map, must be a string
-;; @rhs -- right hand map, can be whatever
-;; @desc -- description, or opts table if no description
-;; @args -- opts table when description is used
-(fn vm- [lhs rhs desc args]
-  "Macro -- create a recursive visual mode map"
-  (let [opts# {}] ; if no desc string, just insert that table
-    (if (= (type desc) :table)
-        (do
-          (tset desc :remap true)
-          `(vim.keymap.set :v ,lhs ,rhs ,desc)) ; if a desc string, add them all to the opts# table
-        (= (type desc) :string)
-        (do
-          (tset opts# :desc desc)
-          (tset opts# :remap true) ; make sure to add the opts# table
-          (if (not= args nil)
-              (each [key val (pairs args)]
-                (tset opts# key val)))
-          `(vim.keymap.set :v ,lhs ,rhs ,opts#)) ; no additional options or description
-        (do
-          (tset opts# :remap true)
-          `(vim.keymap.set :v ,lhs ,rhs opts#)))))
-
-;; Macro -- create a recursive insert mode map
-;; Has 3 outputs
-;; 1 -- No description, but opts table
-;; 2 -- Description and optional opts table
-;; 3 -- Just lhs and rhs
-;; @lhs -- left hand map, must be a string
-;; @rhs -- right hand map, can be whatever
-;; @desc -- description, or opts table if no description
-;; @args -- opts table when description is used
-(fn im- [lhs rhs desc args]
-  "Macro -- create a recursive insert mode map"
-  (let [opts# {}] ; if no desc string, just insert that table
-    (if (= (type desc) :table)
-        (do
-          (tset desc :remap true)
-          `(vim.keymap.set :i ,lhs ,rhs ,desc)) ; if a desc string, add them all to the opts# table
-        (= (type desc) :string)
-        (do
-          (tset opts# :desc desc)
-          (tset opts# :remap true) ; make sure to add the opts# table
-          (if (not= args nil)
-              (each [key val (pairs args)]
-                (tset opts# key val)))
-          `(vim.keymap.set :i ,lhs ,rhs ,opts#)) ; no additional options or description
-        (do
-          (tset opts# :remap true)
-          `(vim.keymap.set :i ,lhs ,rhs opts#)))))
-
-;; Macro -- create a recursive terminal mode map
-;; Has 3 outputs
-;; 1 -- No description, but opts table
-;; 2 -- Description and optional opts table
-;; 3 -- Just lhs and rhs
-;; @lhs -- left hand map, must be a string
-;; @rhs -- right hand map, can be whatever
-;; @desc -- description, or opts table if no description
-;; @args -- opts table when description is used
-(fn tm- [lhs rhs desc args]
-  "Macro -- create a recursive terminal mode map"
-  (let [opts# {}] ; if no desc string, just insert that table
-    (if (= (type desc) :table)
-        (do
-          (tset desc :remap true)
-          `(vim.keymap.set :t ,lhs ,rhs ,desc)) ; if a desc string, add them all to the opts# table
-        (= (type desc) :string)
-        (do
-          (tset opts# :desc desc)
-          (tset opts# :remap true) ; make sure to add the opts# table
-          (if (not= args nil)
-              (each [key val (pairs args)]
-                (tset opts# key val)))
-          `(vim.keymap.set :t ,lhs ,rhs ,opts#)) ; no additional options or description
-        (do
-          (tset opts# :remap true)
-          `(vim.keymap.set :t ,lhs ,rhs opts#)))))
-
-;; Macro -- create a recursive command-line mode map
-;; Has 3 outputs
-;; 1 -- No description, but opts table
-;; 2 -- Description and optional opts table
-;; 3 -- Just lhs and rhs
-;; @lhs -- left hand map, must be a string
-;; @rhs -- right hand map, can be whatever
-;; @desc -- description, or opts table if no description
-;; @args -- opts table when description is used
-(fn cm- [lhs rhs desc args]
-  "Macro -- create a recursive command-line mode map"
-  (let [opts# {}] ; if no desc string, just insert that table
-    (if (= (type desc) :table)
-        (do
-          (tset desc :remap true)
-          `(vim.keymap.set :c ,lhs ,rhs ,desc)) ; if a desc string, add them all to the opts# table
-        (= (type desc) :string)
-        (do
-          (tset opts# :desc desc)
-          (tset opts# :remap true) ; make sure to add the opts# table
-          (if (not= args nil)
-              (each [key val (pairs args)]
-                (tset opts# key val)))
-          `(vim.keymap.set :c ,lhs ,rhs ,opts#)) ; no additional options or description
-        (do
-          (tset opts# :remap true)
-          `(vim.keymap.set :c ,lhs ,rhs opts#)))))
-
-{: map-
- : nomap-
- : ino-
- : im-
- : vno-
- : vm-
- : tno-
- : tm-
- : cno-
- : cm-
- : nno-
- : nm-
- : ono-
- : om-}
+{: set-map : set-maps}
