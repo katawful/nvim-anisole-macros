@@ -1,4 +1,4 @@
-;;; Macros for Neovim utilities
+;;; Macros for nvim commands
 ;; [nfnl-macro]
 
 (fn assert-arg [var# var-type# var-pos# macro#]
