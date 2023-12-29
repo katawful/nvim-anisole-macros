@@ -126,7 +126,7 @@ Returns a string of the user-command name"
      ,(cre-command name command desc ?args)
      ,name))
 
-(lambda del-command [name ?buffer]
+(lambda del-command! [name ?buffer]
   "Macro -- delete a user command
 
 ```
@@ -135,10 +135,10 @@ Returns a string of the user-command name"
 ```
 
 Buffer created user commands will fail if ?buffer is not provided"
-  (assert-arg name :string 1 :del-command)
+  (assert-arg name :string 1 :del-command!)
   (if ?buffer
       (do
-        (assert-arg ?buffer [:boolean :number] 2 :del-command)
+        (assert-arg ?buffer [:boolean :number] 2 :del-command!)
         (if (= ?buffer true)
             `(vim.api.nvim_buf_del_user_command ,name 0)
             `(vim.api.nvim_buf_del_user_command ,name ,?buffer)))
@@ -153,4 +153,4 @@ Buffer created user commands will fail if ?buffer is not provided"
   `(do
      ,(do-ex command# ...)))
 
-{: cre-command : def-command : del-command : do-command : do-viml : do-ex}
+{: cre-command : def-command : del-command! : do-command : do-viml : do-ex}

@@ -113,21 +113,21 @@ local function _32_()
     end
     return assert.are.same("(vim.api.nvim_del_user_command \"UserCommand\")", _34_())
   end
-  it("del-command with just name", _33_)
+  it("del-command! with just name", _33_)
   local function _35_()
     local function _36_()
       return "(vim.api.nvim_buf_del_user_command \"UserCommand\" 0)"
     end
     return assert.are.same("(vim.api.nvim_buf_del_user_command \"UserCommand\" 0)", _36_())
   end
-  it("del-command with name and boolean buffer option", _35_)
+  it("del-command! with name and boolean buffer option", _35_)
   local function _37_()
     local function _38_()
       return "(vim.api.nvim_buf_del_user_command \"UserCommand\" 1)"
     end
     return assert.are.same("(vim.api.nvim_buf_del_user_command \"UserCommand\" 1)", _38_())
   end
-  return it("del-command with name and int buffer option", _37_)
+  return it("del-command! with name and int buffer option", _37_)
 end
 describe("Delete user-command macro:", _32_)
 local function _39_()

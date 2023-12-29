@@ -97,21 +97,21 @@
 
 (describe "Delete user-command macro:"
           (fn []
-            (it "del-command with just name"
+            (it "del-command! with just name"
                 (fn []
                   (assert.are.same "(vim.api.nvim_del_user_command \"UserCommand\")"
-                                   (macrodebug (command.del-command :UserCommand)
+                                   (macrodebug (command.del-command! :UserCommand)
                                                true))))
-            (it "del-command with name and boolean buffer option"
+            (it "del-command! with name and boolean buffer option"
                 (fn []
                   (assert.are.same "(vim.api.nvim_buf_del_user_command \"UserCommand\" 0)"
-                                   (macrodebug (command.del-command :UserCommand
+                                   (macrodebug (command.del-command! :UserCommand
                                                                     true)
                                                true))))
-            (it "del-command with name and int buffer option"
+            (it "del-command! with name and int buffer option"
                 (fn []
                   (assert.are.same "(vim.api.nvim_buf_del_user_command \"UserCommand\" 1)"
-                                   (macrodebug (command.del-command :UserCommand
+                                   (macrodebug (command.del-command! :UserCommand
                                                                     1)
                                                true))))))
 

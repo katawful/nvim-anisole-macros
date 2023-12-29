@@ -4,7 +4,7 @@
 
 - [`cre-command`](#cre-command)
 - [`def-command`](#def-command)
-- [`del-command`](#del-command)
+- [`del-command!`](#del-command)
 - [`do-command`](#do-command)
 - [`do-ex`](#do-ex)
 - [`do-viml`](#do-viml)
@@ -43,11 +43,11 @@ Macro -- Defines a user command with a returned value
 
 Returns a string of the user-command name
 
-## `del-command`
+## `del-command!`
 Function signature:
 
 ```
-(del-command name ?buffer)
+(del-command! name ?buffer)
 ```
 
 Macro -- delete a user command
