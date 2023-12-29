@@ -2,17 +2,20 @@
 
 **Table of contents**
 
-- [`cre-map`](#cre-map)
-- [`cre-maps`](#cre-maps)
+- [`create`](#create)
+- [`private.create-multi-map`](#privatecreate-multi-map)
+- [`private.create-single-map`](#privatecreate-single-map)
 
-## `cre-map`
+## `create`
 Function signature:
 
 ```
-(cre-map modes lhs rhs desc ?args)
+(create modes ...)
 ```
 
-Macro -- Creates a map
+Macro -- Creates a map. Supports single and multiple map creations.
+
+Arguments for single maps:
 
 ```
 @modes: |string| or |seq table| ### String or seq table of strings corresponding
@@ -22,21 +25,47 @@ Macro -- Creates a map
 @desc: |string| ### Description of keymap
 @?args(optional): |opt table| ### Opts table for vim.keymap.set
 ```
-
-## `cre-maps`
-Function signature:
-
-```
-(cre-maps modes ...)
-```
-
-Macro -- Creates multiple maps
+Arguments for multiple maps:
 
 ```
 @modes: |string| or |seq table| ### String or seq table of strings corresponding
                                   to modes
-@... ### Stored as sequential tables, each table is the arguments of `cre-map`
+@... ### Stored as sequential tables, each table is the arguments of single map mode
        minus the `modes` argument
+```
+
+## `private.create-multi-map`
+Function signature:
+
+```
+(private.create-multi-map modes ...)
+```
+
+Internal Macro -- Creates multiple maps
+
+```
+@modes: |string| or |seq table| ### String or seq table of strings corresponding
+                                  to modes
+@... ### Stored as sequential tables, each table is the arguments of `create-single-map`
+       minus the `modes` argument
+```
+
+## `private.create-single-map`
+Function signature:
+
+```
+(private.create-single-map modes lhs rhs desc ?args)
+```
+
+Internal Macro -- Creates a map
+
+```
+@modes: |string| or |seq table| ### String or seq table of strings corresponding
+                                  to modes
+@lhs: |string| ### Left hand of keymap
+@rhs: |string| or |function| or |table| ### Right hand of keymap
+@desc: |string| ### Description of keymap
+@?args(optional): |opt table| ### Opts table for vim.keymap.set
 ```
 
 

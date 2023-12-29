@@ -2,7 +2,7 @@
 ;; [nfnl-macro]
 
 ;; Module
-(local M {})
+(local M {:private {}})
 
 (fn assert-arg [var# var-type# var-pos# macro#]
   "FN -- Handle `assert-compile` simpler"
@@ -34,12 +34,8 @@
                                      (tostring macro#) var-type# var-pos#
                                      (type var#)))))
 
-; (map.create [:n :v] :lhs :rhs "Description") ;-> would be for 1 map
-; (map.create [:n :v] [:lhs :rhs "Description"]
-;                     [:lhs :rhs "Description"]) ;-> would be for multiple maps
-
-(lambda M.cre-map [modes lhs rhs desc ?args]
-  "Macro -- Creates a map
+(lambda M.private.create-single-map [modes lhs rhs desc ?args]
+  "Internal Macro -- Creates a map
 
 ```
 @modes: |string| or |seq table| # String or seq table of strings corresponding
@@ -49,32 +45,32 @@
 @desc: |string| # Description of keymap
 @?args(optional): |opt table| # Opts table for vim.keymap.set
 ```"
-  (assert-arg modes [:string :table] 1 :cre-map)
-  (assert-arg lhs :string 2 :cre-map)
-  (assert-arg rhs [:string :function :table] 3 :cre-map)
-  (assert-arg desc :string 4 :cre-map)
+  (assert-arg modes [:string :table] 1 :create-single-map)
+  (assert-arg lhs :string 2 :create-single-map)
+  (assert-arg rhs [:string :function :table] 3 :create-single-map)
+  (assert-arg desc :string 4 :create-single-map)
   (let [opts# {}]
     (tset opts# :desc desc)
     (when ?args
-      (assert-arg ?args :table 5 :cre-map)
+      (assert-arg ?args :table 5 :create-single-map)
       (each [key val (pairs ?args)]
         (tset opts# key val)))
     `(vim.keymap.set ,modes ,lhs ,rhs ,opts#)))
 
-(lambda M.cre-maps [modes ...]
-  "Macro -- Creates multiple maps
+(lambda M.private.create-multi-map [modes ...]
+  "Internal Macro -- Creates multiple maps
 
 ```
 @modes: |string| or |seq table| # String or seq table of strings corresponding
                                   to modes
-@... # Stored as sequential tables, each table is the arguments of `cre-map`
+@... # Stored as sequential tables, each table is the arguments of `create-single-map`
        minus the `modes` argument
 ```"
-  (assert-arg modes [:string :table] 1 :cre-map)
+  (assert-arg modes [:string :table] 1 :create-single-map)
   (let [maps# [...]
         size# (length maps#)]
     (assert-compile (> size# 0)
-                    (string.format "\"cre-maps\" -- Expected a table of keymaps, received nil")
+                    (string.format "\"create-multi-map\" -- Expected a table of keymaps, received nil")
                     maps#)
     ;; Recurse through macro to make static, starting from first element
 
@@ -88,12 +84,41 @@
             ;; If at one, end of recurse. Finish macro
             (if (= size# i#)
                 `(do
-                   ,(M.cre-map modes lhs# rhs# desc# args#)))
+                   ,(M.private.create-single-map modes lhs# rhs# desc# args#)))
             `(do
-               ,(M.cre-map modes lhs# rhs# desc# args#)
+               ,(M.private.create-single-map modes lhs# rhs# desc# args#)
                ,(recurse-output map# (+ i# 1))))))
 
     (when (> size# 0)
       (recurse-output maps# 1))))
+
+(fn M.create [modes ...]
+  "Macro -- Creates a map. Supports single and multiple map creations.
+
+Arguments for single maps:
+
+```
+@modes: |string| or |seq table| # String or seq table of strings corresponding
+                                  to modes
+@lhs: |string| # Left hand of keymap
+@rhs: |string| or |function| or |table| # Right hand of keymap
+@desc: |string| # Description of keymap
+@?args(optional): |opt table| # Opts table for vim.keymap.set
+```
+Arguments for multiple maps:
+
+```
+@modes: |string| or |seq table| # String or seq table of strings corresponding
+                                  to modes
+@... # Stored as sequential tables, each table is the arguments of single map mode
+       minus the `modes` argument
+```"
+  (assert-arg modes [:string :table] 1 :create)
+  (let [maps# [...]]
+    (match (type (?. maps# 1))
+      :string
+      `,(M.private.create-single-map modes (. maps# 1) (. maps# 2) (. maps# 3)
+                                     (. maps# 4))
+      :table `,(M.private.create-multi-map modes ...))))
 
 M
