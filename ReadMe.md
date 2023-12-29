@@ -3,10 +3,10 @@ These are fennel macros for neovim. Care has been taken to make each macro easil
 
 # Reference
 
-- [Autocommands](/doc/reference/fnl/nvim-anisole-macros/autocmds.md)
-- [Commands](/doc/reference/fnl/nvim-anisole-macros/commands.md)
-- [Maps](/doc/reference/fnl/nvim-anisole-macros/maps.md)
-- [Options](/doc/reference/fnl/nvim-anisole-macros/options.md)
+- [Autocommands](/doc/reference/fnl/nvim-anisole/macros/autocmds.md)
+- [Commands](/doc/reference/fnl/nvim-anisole/macros/commands.md)
+- [Maps](/doc/reference/fnl/nvim-anisole/macros/maps.md)
+- [Options](/doc/reference/fnl/nvim-anisole/macros/options.md)
 
 # Documentation
 
