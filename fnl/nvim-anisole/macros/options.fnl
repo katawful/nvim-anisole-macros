@@ -1,6 +1,9 @@
 ;;; Macro file for option management
 ;; [nfnl-macro]
 
+;; Module
+(local M {})
+
 (fn assert-arg [var# var-type# var-pos# macro#]
   "FN -- Handle `assert-compile` simpler"
   (if (= (type var-type#) :table)
@@ -36,7 +39,7 @@
   (let [opt# (tostring opt)]
     (. (vim.api.nvim_get_option_info2 opt# {}) :scope)))
 
-(lambda set-opt [option value ?flag]
+(lambda M.set-opt [option value ?flag]
   "Macro -- Sets an option
 
 ```
@@ -62,7 +65,7 @@
       (let [opt# (tostring option)]
         `(tset vim.opt ,opt# ,value))))
 
-(lambda set-local-opt [option value ?flag]
+(lambda M.set-local-opt [option value ?flag]
   "Macro -- Sets a local option
 
 ```
@@ -91,7 +94,7 @@
       (let [opt# (tostring option)]
         `(tset vim.opt_local ,opt# ,value))))
 
-(lambda set-global-opt [option value ?flag]
+(lambda M.set-global-opt [option value ?flag]
   "Macro -- Sets a global option
 
 ```
@@ -120,7 +123,7 @@
       (let [opt# (tostring option)]
         `(tset vim.opt_global ,opt# ,value))))
 
-(lambda set-opt-auto [option value ?flag]
+(lambda M.set-opt-auto [option value ?flag]
   "Macro -- Sets an option with auto scope
 
 ```
@@ -135,9 +138,9 @@ not particularly clean, as you then have to remember what is what kind of
 scope. This macro fixes this by always preferring the local scope if available
 but not restricting the use of global-only scoped options
 
-`(set-opt-auto spell true)` -> will set spell locally   
-`(set-opt-auto mouse :nvi)` -> will set mouse globally   
-`(set-opt spell true)`      -> will set spell globally   
+`(M.set-opt-auto spell true)` -> will set spell locally   
+`(M.set-opt-auto mouse :nvi)` -> will set mouse globally   
+`(M.set-opt spell true)`      -> will set spell globally   
 
 This macro is generally preferred when no specification is needed.
 However, since it sets local options its generally avoided for system wide configs."
@@ -160,7 +163,7 @@ However, since it sets local options its generally avoided for system wide confi
           :buf `(tset vim.opt_local ,opt# ,value)
           :global `(tset vim.opt_global ,opt# ,value)))))
 
-(lambda set-opts [options ?flag]
+(lambda M.set-opts [options ?flag]
   "Macro -- Plural of set-opt
 
 ```
@@ -218,7 +221,7 @@ Takes key-value table of options"
     ;; Start recurse
     (recurse-output key# val# size#)))
 
-(lambda set-local-opts [options ?flag]
+(lambda M.set-local-opts [options ?flag]
   "Macro -- Plural of set-local-opt
 
 ```
@@ -281,7 +284,7 @@ Takes key-value table of options"
     ;; Start recurse
     (recurse-output key# val# size#)))
 
-(lambda set-global-opts [options ?flag]
+(lambda M.set-global-opts [options ?flag]
   "Macro -- Plural of set-global-opt
 
 ```
@@ -343,7 +346,7 @@ Takes key-value table of options"
     ;; Start recurse
     (recurse-output key# val# size#)))
 
-(lambda set-opts-auto [options ?flag]
+(lambda M.set-opts-auto [options ?flag]
   "Macro -- Plural of set-opt-auto
 
 ```
@@ -358,9 +361,9 @@ not particularly clean, as you then have to remember what is what kind of
 scope. This macro fixes this by always preferring the local scope if available
 but not restricting the use of global-only scoped options
 
-`(set-opt-auto spell true)` -> will set spell locally   
-`(set-opt-auto mouse :nvi)` -> will set mouse globally   
-`(set-opt spell true)`      -> will set spell globally   
+`(M.set-opt-auto spell true)` -> will set spell locally   
+`(M.set-opt-auto mouse :nvi)` -> will set mouse globally   
+`(M.set-opt spell true)`      -> will set spell globally   
 
 This macro is generally preferred when no specification is needed.
 However, since it sets local options its generally avoided for system wide configs."
@@ -428,7 +431,7 @@ However, since it sets local options its generally avoided for system wide confi
     ;; Start recurse
     (recurse-output key# val# size#)))
 
-(lambda get-opt [option]
+(lambda M.get-opt [option]
   "Macro -- Get an option's value
 
 ```
@@ -437,7 +440,7 @@ However, since it sets local options its generally avoided for system wide confi
   (let [opt# (tostring option)]
     `(: (. vim.opt ,opt#) :get)))
 
-(lambda set-var [scope variable value]
+(lambda M.set-var [scope variable value]
   "Macro -- Sets a Vim variable
 
 ```
@@ -468,7 +471,7 @@ return an error."
                           scope#)
           `(tset (. vim ,scope#) ,var# ,value)))))
 
-(lambda set-vars [scope variables]
+(lambda M.set-vars [scope variables]
   "Macro -- Plural of set-var for one scope
 
 ```
@@ -504,16 +507,16 @@ return an error."
                 value# (. val# i#)]
             ;; If at one, we are at the end of the recurse and can finish this call
             (if (= 1 i#)
-                `,(set-var scope variable# value#)
+                `,(M.set-var scope variable# value#)
                 ;; For recursion
                 `(do
-                   ,(set-var scope variable# value#)
+                   ,(M.set-var scope variable# value#)
                    ,(recurse-output key# val# (- i# 1)))))))
 
     ;; Start recurse
     (recurse-output key# val# size#)))
 
-(lambda get-var [scope variable]
+(lambda M.get-var [scope variable]
   "Macro -- Get the value of a Vim variable
 
 ```
@@ -543,15 +546,4 @@ return an error."
                           scope#)
           `(. (. vim ,scope#) ,var#)))))
 
-{: get-opt
- : get-var
- : set-global-opt
- : set-global-opts
- : set-local-opt
- : set-local-opts
- : set-opt-auto
- : set-opts
- : set-opts-auto
- : set-var
- : set-vars
- : set-opt}
+M

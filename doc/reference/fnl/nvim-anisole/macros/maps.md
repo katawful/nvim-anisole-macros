@@ -35,7 +35,7 @@ Macro -- Creates multiple maps
 ```
 @modes: |string| or |seq table| ### String or seq table of strings corresponding
                                   to modes
-@... ### Stored as sequential tables, each table is the arguments of `set-map`
+@... ### Stored as sequential tables, each table is the arguments of `cre-map`
        minus the `modes` argument
 ```
 

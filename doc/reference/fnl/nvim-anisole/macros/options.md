@@ -144,9 +144,9 @@ not particularly clean, as you then have to remember what is what kind of
 scope. This macro fixes this by always preferring the local scope if available
 but not restricting the use of global-only scoped options
 
-`(set-opt-auto spell true)` -> will set spell locally   
-`(set-opt-auto mouse :nvi)` -> will set mouse globally   
-`(set-opt spell true)`      -> will set spell globally   
+`(M.set-opt-auto spell true)` -> will set spell locally   
+`(M.set-opt-auto mouse :nvi)` -> will set mouse globally   
+`(M.set-opt spell true)`      -> will set spell globally   
 
 This macro is generally preferred when no specification is needed.
 However, since it sets local options its generally avoided for system wide configs.
@@ -188,9 +188,9 @@ not particularly clean, as you then have to remember what is what kind of
 scope. This macro fixes this by always preferring the local scope if available
 but not restricting the use of global-only scoped options
 
-`(set-opt-auto spell true)` -> will set spell locally   
-`(set-opt-auto mouse :nvi)` -> will set mouse globally   
-`(set-opt spell true)`      -> will set spell globally   
+`(M.set-opt-auto spell true)` -> will set spell locally   
+`(M.set-opt-auto mouse :nvi)` -> will set mouse globally   
+`(M.set-opt spell true)`      -> will set spell globally   
 
 This macro is generally preferred when no specification is needed.
 However, since it sets local options its generally avoided for system wide configs.

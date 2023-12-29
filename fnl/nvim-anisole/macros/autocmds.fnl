@@ -1,6 +1,9 @@
 ;;; Macro file for autocommands
 ;; [nfnl-macro]
 
+;; Module
+(local M {})
+
 (fn assert-arg [var# var-type# var-pos# macro#]
   "FN -- Handle `assert-compile` simpler"
   (if (= (type var-type#) :table)
@@ -31,7 +34,7 @@
                                      (tostring macro#) var-type# var-pos#
                                      (type var#)))))
 
-(lambda cre-autocmd! [events pattern callback desc ?args]
+(lambda M.cre-autocmd! [events pattern callback desc ?args]
   "Macro -- Creates an autocmd
 
 ```
@@ -57,7 +60,7 @@
         (tset opts# k# v#)))
     `(vim.api.nvim_create_autocmd ,events ,opts#)))
 
-(lambda def-augroup! [name ?no-clear]
+(lambda M.def-augroup! [name ?no-clear]
   "Macro -- Defines an auto group and returns the id
 
 ```
@@ -71,7 +74,7 @@
       `(vim.api.nvim_create_augroup ,name {:clear true})
       `(vim.api.nvim_create_augroup ,name {:clear false})))
 
-(lambda do-augroup [group ...]
+(lambda M.do-augroup [group ...]
   "Macro -- Inserts an auto group into autocmd calls
 
 ```
@@ -101,14 +104,14 @@
             ;; If at one, end of recurse. Finish macro
             (if (= 1 i#)
                 `(do
-                   ,(cre-autocmd! events# pattern# callback# desc# args#)))
+                   ,(M.cre-autocmd! events# pattern# callback# desc# args#)))
             `(do
-               ,(cre-autocmd! events# pattern# callback# desc# args#)
+               ,(M.cre-autocmd! events# pattern# callback# desc# args#)
                ,(recurse-output autocmd# (- i# 1))))))
 
     (recurse-output autocmds# size#)))
 
-(lambda cle-autocmd! [tbl]
+(lambda M.cle-autocmd! [tbl]
   "Macro -- Clears autocommands
 
 ```
@@ -117,7 +120,7 @@
   (assert-arg tbl :table 1 :cle-autocmd!)
   `(vim.api.nvim_clear_autocmds ,tbl))
 
-(lambda cle-autocmd<-event! [events]
+(lambda M.cle-autocmd<-event! [events]
   "Macro -- Clears autocommands from events
 
 ```
@@ -126,7 +129,7 @@
   (assert-arg events [:string :table] 1 :cle-autocmd<-event!)
   `(vim.api.nvim_clear_autocmds {:event ,events}))
 
-(lambda cle-autocmd<-pattern! [patterns]
+(lambda M.cle-autocmd<-pattern! [patterns]
   "Macro -- Clears autocommands from patterns
 
 ```
@@ -135,7 +138,7 @@
   (assert-arg patterns [:string :table] 1 :cle-autocmd<-pattern!)
   `(vim.api.nvim_clear_autocmds {:pattern ,patterns}))
 
-(lambda cle-autocmd<-buffer! [buffers]
+(lambda M.cle-autocmd<-buffer! [buffers]
   "Macro -- Clears autocommands from buffers
 
 ```
@@ -146,7 +149,7 @@
                     buffers)]
     `(vim.api.nvim_clear_autocmds {:buffer ,buffer#})))
 
-(lambda cle-autocmd<-group! [groups]
+(lambda M.cle-autocmd<-group! [groups]
   "Macro -- Clears autocommands from group
 
 ```
@@ -155,7 +158,7 @@
   (assert-arg groups [:string :number] 1 :cle-autocmd<-group!)
   `(vim.api.nvim_clear_autocmds {:group ,groups}))
 
-(lambda del-augroup! [augroup]
+(lambda M.del-augroup! [augroup]
   "Macro -- Deletes augroup by id or name
 
 ```
@@ -166,7 +169,7 @@
       `(vim.api.nvim_del_augroup_by_name ,augroup)
       `(vim.api.nvim_del_augroup_by_id ,augroup)))
 
-(lambda get-autocmd [tbl]
+(lambda M.get-autocmd [tbl]
   "Macro -- Gets autocommands
 
 ```
@@ -175,7 +178,7 @@
   (assert-arg tbl :table 1 :cle-autocmd!)
   `(vim.api.nvim_get_autocmds ,tbl))
 
-(lambda get-autocmd<-group [groups]
+(lambda M.get-autocmd<-group [groups]
   "Macro -- Gets autocommand from group
 
 ```
@@ -186,7 +189,7 @@
                   (.. "Expected string or number, got " (type groups)) groups)
   `(vim.api.nvim_get_autocmds {:group ,groups}))
 
-(lambda get-autocmd<-pattern [patterns]
+(lambda M.get-autocmd<-pattern [patterns]
   "Macro -- Gets autocommands from patterns
 
 ```
@@ -195,7 +198,7 @@
   (assert-arg patterns [:string :table] 1 :cle-autocmd<-pattern!)
   `(vim.api.nvim_get_autocmds {:pattern ,patterns}))
 
-(lambda get-autocmd<-event [events]
+(lambda M.get-autocmd<-event [events]
   "Macro -- Gets autocommands from events
 
 ```
@@ -204,7 +207,7 @@
   (assert-arg events [:string :table] 1 :cle-autocmd<-event!)
   `(vim.api.nvim_get_autocmds {:event ,events}))
 
-(lambda do-autocmd [events ?args]
+(lambda M.do-autocmd [events ?args]
   "Macro -- Runs an autocommand
 
 ```
@@ -220,17 +223,4 @@
                         (type ?args)) ?args)
     `(vim.api.nvim_exec_autocmds ,events ,?args)))
 
-{: cle-autocmd!
- : cle-autocmd<-event!
- : cle-autocmd<-pattern!
- : cle-autocmd<-buffer!
- : cle-autocmd<-group!
- : get-autocmd
- : get-autocmd<-event
- : get-autocmd<-pattern
- : get-autocmd<-group
- : do-autocmd
- : cre-autocmd!
- : do-augroup
- : del-augroup!
- : def-augroup!}
+M

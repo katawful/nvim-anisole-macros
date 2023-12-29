@@ -1,6 +1,9 @@
 ;;; Macros for nvim commands
 ;; [nfnl-macro]
 
+;; Module
+(local M {})
+
 (fn assert-arg [var# var-type# var-pos# macro#]
   "FN -- Handle `assert-compile` simpler"
   (if (= (type var-type#) :table)
@@ -49,7 +52,7 @@
                          :islocked true
                          :isnan true})
 
-(lambda do-ex [function ...]
+(lambda M.do-ex [function ...]
   "Macro -- Runs a Ex command
 
 ```
@@ -68,7 +71,7 @@ Can accept a table for functions that take key=val args"
           (table.insert args# (tostring arg#))))
     `(vim.cmd {:cmd ,function :args ,args# :output true})))
 
-(lambda do-viml [function ...]
+(lambda M.do-viml [function ...]
   "Macro -- Runs a VimL function
 
 ```
@@ -85,7 +88,7 @@ Returns boolean for builtin truthy/falsy functions such as 'has()'"
              (if (= result# 0) false true)))
         `((. vim.fn ,func#) ,...))))
 
-(lambda cre-command [name callback desc ?args]
+(lambda M.cre-command [name callback desc ?args]
   "Macro -- Creates a user command
 
 ```
@@ -111,7 +114,7 @@ Returns boolean for builtin truthy/falsy functions such as 'has()'"
                                                  ,opts#))
         `(vim.api.nvim_create_user_command ,name ,callback ,opts#))))
 
-(lambda def-command [name command desc ?args]
+(lambda M.def-command [name command desc ?args]
   "Macro -- Defines a user command with a returned value
 
 ```
@@ -123,10 +126,10 @@ Returns boolean for builtin truthy/falsy functions such as 'has()'"
 
 Returns a string of the user-command name"
   `(do
-     ,(cre-command name command desc ?args)
+     ,(M.cre-command name command desc ?args)
      ,name))
 
-(lambda del-command! [name ?buffer]
+(lambda M.del-command! [name ?buffer]
   "Macro -- delete a user command
 
 ```
@@ -144,13 +147,13 @@ Buffer created user commands will fail if ?buffer is not provided"
             `(vim.api.nvim_buf_del_user_command ,name ,?buffer)))
       `(vim.api.nvim_del_user_command ,name)))
 
-(lambda do-command [command# ...]
+(lambda M.do-command [command# ...]
   "Macro -- Runs a user command
 ```
 @command#: |string| # Name for user command
 @... # Arguments for user command
 ```"
   `(do
-     ,(do-ex command# ...)))
+     ,(M.do-ex command# ...)))
 
-{: cre-command : def-command : del-command! : do-command : do-viml : do-ex}
+M
