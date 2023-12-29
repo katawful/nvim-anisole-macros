@@ -31,26 +31,27 @@
                                      (tostring macro#) var-type# var-pos#
                                      (type var#)))))
 
-(lambda cre-autocmd! [events pattern callback desc args]
+(lambda cre-autocmd! [events pattern callback desc ?args]
   "Macro -- Creates an autocmd
 @events: |string| or |seq of strings| # The autocmd event(s) to use
 @pattern: |string| or |seq of strings| # The file pattern(s) to match against
 @callback: |function| or |string| # The function or vimscript that gets called on fire of autocmd
 @desc: |string| # Description of autocmd
-@args: |opt table| # Table of options for `vim.api.nvim_create_autocmd`"
+@?args: |opt table| # Table of options for `vim.api.nvim_create_autocmd`"
   (assert-arg events [:string :table] 1 :cre-autocmd!)
   (assert-arg pattern [:string :table] 2 :cre-autocmd!)
   (assert-arg callback [:table :function :string] 3 :cre-autocmd!)
   (assert-arg desc :string 4 :cre-autocmd!)
-  (assert-arg args :table 5 :cre-autocmd!)
   (let [opts# {}
         call-type# (if (= (type callback) :string) :command :callback)] ; if no desc string, just insert that table
     ;; if a desc string, add them all to the opts table
     (tset opts# :desc desc)
     (tset opts# call-type# callback)
     (tset opts# :pattern pattern)
-    (each [k# v# (pairs args)]
-      (tset opts# k# v#))
+    (when ?args
+      (assert-arg ?args :table 5 :cre-autocmd!)
+      (each [k# v# (pairs ?args)]
+        (tset opts# k# v#)))
     `(vim.api.nvim_create_autocmd ,events ,opts#)))
 
 (lambda def-augroup! [name ?no-clear]
@@ -162,18 +163,18 @@
   (assert-arg events [:string :table] 1 :cle-autocmd<-event!)
   `(vim.api.nvim_get_autocmds {:event ,events}))
 
-(lambda do-autocmd [events ?opts]
+(lambda do-autocmd [events ?args]
   "Macro -- do autocommand
 @events: |string| or |seq table| # Events
-@?opts: |key/val table| # Options table for vim.api.nvim_exec_autocmds"
+@?args: |key/val table| # Options table for vim.api.nvim_exec_autocmds"
   (assert-arg events [:string :table] 1 :do-autocmd)
-  (let [opts (if (= ?opts nil)
+  (let [?args (if (= ?args nil)
                  {}
-                 ?opts)]
-    (assert-compile (or (not ?opts) (= (type opts) :table))
+                 ?args)]
+    (assert-compile (or (not ?args) (= (type ?args) :table))
                     (.. "\"do-autocmd\" -- Expected table for arg #2, got "
-                        (type opts)) opts)
-    `(vim.api.nvim_exec_autocmds ,events ,opts)))
+                        (type ?args)) ?args)
+    `(vim.api.nvim_exec_autocmds ,events ,?args)))
 
 {: cle-autocmd!
  : cle-autocmd<-event!

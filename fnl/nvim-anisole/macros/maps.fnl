@@ -43,11 +43,10 @@
   (assert-arg lhs :string 2 :set-map)
   (assert-arg rhs [:string :function :table] 3 :set-map)
   (assert-arg desc :string 4 :set-map)
-  (when ?args
-    (assert-arg ?args :table 5 :set-map))
   (let [opts# {}]
     (tset opts# :desc desc)
     (when ?args
+      (assert-arg ?args :table 5 :set-map)
       (each [key val (pairs ?args)]
         (tset opts# key val)))
     `(vim.keymap.set ,modes ,lhs ,rhs ,opts#)))

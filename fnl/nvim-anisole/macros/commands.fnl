@@ -77,37 +77,38 @@ Returns boolean for builtin truthy/falsy functions such as 'has()'"
              (if (= result# 0) false true)))
         `((. vim.fn ,func#) ,...))))
 
-(lambda cre-command [name callback desc args]
+(lambda cre-command [name callback desc ?args]
   "Macro -- Creates a user command
 @name: |string| # Name for user command
 @callback: |string| # The function that gets called on fire of user command
 @desc: |string| # Description of user command
-@args: |opt table| # Opts table for `vim.api.nvim_create_user_command`"
+@?args: |opt table| # Opts table for `vim.api.nvim_create_user_command`"
   (assert-arg name :string 1 :cre-command)
   (assert-arg callback [:table :function] 2 :cre-command)
   (assert-arg desc :string 3 :cre-command)
-  (assert-arg args :table 4 :cre-command)
   (let [opts# {}]
     (tset opts# :desc desc)
-    (each [k# v# (pairs args)]
-      (tset opts# k# v#))
-    (if (?. args :buffer)
-        (let [buffer# (if (= args.buffer true) 0
-                          args.buffer)]
+    (when ?args
+      (assert-arg ?args :table 4 :cre-command)
+      (each [k# v# (pairs ?args)]
+        (tset opts# k# v#)))
+    (if (?. ?args :buffer)
+        (let [buffer# (if (= ?args.buffer true) 0
+                          ?args.buffer)]
           (tset opts# :buffer nil)
           `(vim.api.nvim_buf_create_user_command ,buffer# ,name ,callback
                                                  ,opts#))
         `(vim.api.nvim_create_user_command ,name ,callback ,opts#))))
 
-(lambda def-command [name command desc args]
+(lambda def-command [name command desc ?args]
   "Macro -- define a user command with a returned value
 @name: |string| # Name for user command
 @callback: |string| # The function that gets called on fire of user command
 @desc: |string| # Description of user command
-@args: |opt table| # Opts table for `vim.api.nvim_create_user_command`
+@?args: |opt table| # Opts table for `vim.api.nvim_create_user_command`
 Returns a string of the user-command name"
   `(do
-     ,(cre-command name command desc args)
+     ,(cre-command name command desc ?args)
      ,name))
 
 (lambda del-command [name ?buffer]
