@@ -1,7 +1,7 @@
 # maps
 Allows a Vimscript-esque syntax to simplify the amount of needed information. Unlike the Lua function that these macros use, a description **must** be provided, but the opts table is **optional**.
 
-[Reference](../fnl/nvim-anisole-macros/maps.md)
+[Reference](../reference/fnl/nvim-anisole/macros/maps.md)
 
 ## `cre-map`
 Creates a single map, with a specified mode as a string or sequential table.

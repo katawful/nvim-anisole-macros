@@ -1,7 +1,7 @@
 # commands
 Allows interfacing with legacy Vimscript functions and commands in a simpler manner
 
-[Reference](../fnl/nvim-anisole-macros/commands.md)
+[Reference](../reference/fnl/nvim-anisole/macros/commands.md)
 
 ## User-Commands
 Macros allow full manipulation of user-commands.

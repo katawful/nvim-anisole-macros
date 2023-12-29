@@ -2,7 +2,7 @@
 Handles dealing with autocommands and autogroups.
 
 
-[Reference](../fnl/nvim-anisole-macros/autocmds.md)
+[Reference](../reference/fnl/nvim-anisole/macros/autocmds.md)
 
 ## `def-augroup!`
 Defines an autogroup to be returned for a variable.
