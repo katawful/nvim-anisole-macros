@@ -36,7 +36,7 @@
   (let [opt# (tostring opt)]
     (. (vim.api.nvim_get_option_info2 opt# {}) :scope)))
 
-(fn set-opt [option value ?flag]
+(lambda set-opt [option value ?flag]
   "Macro -- Sets an option
 @option: |object| or |string| # The option, can be written literally
 @value: |any| # The value of the option
@@ -59,7 +59,7 @@
       (let [opt# (tostring option)]
         `(tset vim.opt ,opt# ,value))))
 
-(fn set-local-opt [option value ?flag]
+(lambda set-local-opt [option value ?flag]
   "Macro -- set a local option
 @option: |object| or |string| # The option, can be written literally
 @value: |any| # The value of the option
@@ -85,7 +85,7 @@
       (let [opt# (tostring option)]
         `(tset vim.opt_local ,opt# ,value))))
 
-(fn set-global-opt [option value ?flag]
+(lambda set-global-opt [option value ?flag]
   "Macro -- set a global option
 @option: |object| or |string| # The option, can be written literally
 @value: |any| # The value of the option
@@ -111,7 +111,7 @@
       (let [opt# (tostring option)]
         `(tset vim.opt_global ,opt# ,value))))
 
-(fn set-opt-auto [option value ?flag]
+(lambda set-opt-auto [option value ?flag]
   "Macro -- set an option with auto scope
 @option: |object| or |string| # The option, can be written literally
 @value: |any| # The value of the option
@@ -147,7 +147,7 @@ However, since it sets local options its generally avoided for system wide confi
           :buf `(tset vim.opt_local ,opt# ,value)
           :global `(tset vim.opt_global ,opt# ,value)))))
 
-(fn set-opts [options ?flag]
+(lambda set-opts [options ?flag]
   "Macro -- plural of set-opt
 Takes key-value table of options
 @options: |key/val table| # The options, where the key is the option and val is the value
@@ -175,7 +175,6 @@ Takes key-value table of options
                out#)
         size# (length key#)]
     ;; We recurse through this macro until all options are placed
-
     (fn recurse-output [key# val# i#]
       ;; Don't go past index
       (if (< 0 i#)
@@ -197,11 +196,10 @@ Takes key-value table of options
                 `(do
                    (tset vim.opt ,option# ,value#)
                    ,(recurse-output key# val# (- i# 1)))))))
-
     ;; Start recurse
     (recurse-output key# val# size#)))
 
-(fn set-local-opts [options ?flag]
+(lambda set-local-opts [options ?flag]
   "Macro -- plural of set-local-opt
 @options: |key/val table| # The options, where the key is the option and val is the value
 @?flag(optional): |string| # A flag (append, prepend, remove) for the option
@@ -230,7 +228,6 @@ Takes key-value table of options"
                out#)
         size# (length key#)]
     ;; We recurse through this macro until all options are placed
-
     (fn recurse-output [key# val# i#]
       ;; Don't go past index
       (if (< 0 i#)
@@ -257,11 +254,10 @@ Takes key-value table of options"
                 `(do
                    (tset vim.opt_local ,option# ,value#)
                    ,(recurse-output key# val# (- i# 1)))))))
-
     ;; Start recurse
     (recurse-output key# val# size#)))
 
-(fn set-global-opts [options ?flag]
+(lambda set-global-opts [options ?flag]
   "Macro -- plural of set-global-opt
 @options: |key/val table| # The options, where the key is the option and val is the value
 @?flag(optional): |string| # A flag (append, prepend, remove) for the option
@@ -290,7 +286,6 @@ Takes key-value table of options"
                out#)
         size# (length key#)]
     ;; We recurse through this macro until all options are placed
-
     (fn recurse-output [key# val# i#]
       ;; Don't go past index
       (if (< 0 i#)
@@ -316,11 +311,10 @@ Takes key-value table of options"
                 `(do
                    (tset vim.opt_global ,option# ,value#)
                    ,(recurse-output key# val# (- i# 1)))))))
-
     ;; Start recurse
     (recurse-output key# val# size#)))
 
-(fn set-opts-auto [options ?flag]
+(lambda set-opts-auto [options ?flag]
   "Macro -- plural of set-opt-auto
 @options: |key/val table| # The options, where the key is the option and val is the value
 @?flag(optional): |string| # A flag (append, prepend, remove) for the option
@@ -360,7 +354,6 @@ However, since it sets local options its generally avoided for system wide confi
                out#)
         size# (length key#)]
     ;; We recurse through this macro until all options are placed
-
     (fn recurse-output [key# val# i#]
       ;; Don't go past index
       (if (< 0 i#)
@@ -397,17 +390,16 @@ However, since it sets local options its generally avoided for system wide confi
                     `(do
                        (tset vim.opt_local ,option# ,value#)
                        ,(recurse-output key# val# (- i# 1))))))))
-
     ;; Start recurse
     (recurse-output key# val# size#)))
 
-(fn get-opt [option]
+(lambda get-opt [option]
   "Macro -- get an option's value
 @option: |object| or |string| # The option, can be written literally"
   (let [opt# (tostring option)]
     `(: (. vim.opt ,opt#) :get)))
 
-(fn set-var [scope variable value]
+(lambda set-var [scope variable value]
   "Macro -- set a Vim variable
 @scope: |string| # The scope of the variable
 @variable: |object| or |string| # The variable itself. Can be string or literal object
@@ -435,7 +427,7 @@ return an error."
                           scope#)
           `(tset (. vim ,scope#) ,var# ,value)))))
 
-(fn set-vars [scope variables]
+(lambda set-vars [scope variables]
   "Macro -- plural of set-var for one scope
 @scope: |string| # The scope of the variable
 @variables: |key/val table| # The variables, where the key is the variable and val is the value"
@@ -455,7 +447,6 @@ return an error."
                out#)
         size# (length key#)]
     ;; We recurse through this macro until all variables are placed
-
     (fn recurse-output [key# val# i#]
       ;; Don't go past index
       (if (< 0 i#)
@@ -469,11 +460,10 @@ return an error."
                 `(do
                    ,(set-var scope variable# value#)
                    ,(recurse-output key# val# (- i# 1)))))))
-
     ;; Start recurse
     (recurse-output key# val# size#)))
 
-(fn get-var [scope variable]
+(lambda get-var [scope variable]
   "Macro -- get the value of a Vim variable
 @scope: |string| # The scope of the variable
 @variables: |key/val table| # The variables, where the key is the variable and val is the value"

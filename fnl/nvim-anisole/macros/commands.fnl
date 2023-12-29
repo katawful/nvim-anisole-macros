@@ -49,7 +49,7 @@
                          :islocked true
                          :isnan true})
 
-(fn do-ex [function ...]
+(lambda do-ex [function ...]
   "Macro -- Runs a Ex command
 @function: |Ex| # Ex function
 @... # Arguments for Ex command
@@ -64,7 +64,7 @@ Can accept a table for functions that take key=val args"
           (table.insert args# (tostring arg#))))
     `(vim.cmd {:cmd ,function :args ,args# :output true})))
 
-(fn do-viml [function ...]
+(lambda do-viml [function ...]
   "Macro -- Runs a VimL function
 @function: |Vimscript| # Vimscript function
 @... # Arguments for Vimscript command
@@ -77,7 +77,7 @@ Returns boolean for builtin truthy/falsy functions such as 'has()'"
              (if (= result# 0) false true)))
         `((. vim.fn ,func#) ,...))))
 
-(fn cre-command [name callback desc args]
+(lambda cre-command [name callback desc args]
   "Macro -- Creates a user command
 @name: |string| # Name for user command
 @callback: |string| # The function that gets called on fire of user command
@@ -99,7 +99,7 @@ Returns boolean for builtin truthy/falsy functions such as 'has()'"
                                                  ,opts#))
         `(vim.api.nvim_create_user_command ,name ,callback ,opts#))))
 
-(fn def-command [name command desc args]
+(lambda def-command [name command desc args]
   "Macro -- define a user command with a returned value
 @name: |string| # Name for user command
 @callback: |string| # The function that gets called on fire of user command
@@ -110,7 +110,7 @@ Returns a string of the user-command name"
      ,(cre-command name command desc args)
      ,name))
 
-(fn del-command [name ?buffer]
+(lambda del-command [name ?buffer]
   "Macro -- delete a user command
 @name: |string| # Name for user command
 @?buffer(optional): |int| or |boolean| # Use a buffer
@@ -124,7 +124,7 @@ Buffer created user commands will fail if ?buffer is not provided"
             `(vim.api.nvim_buf_del_user_command ,name ,?buffer)))
       `(vim.api.nvim_del_user_command ,name)))
 
-(fn do-command [command# ...]
+(lambda do-command [command# ...]
   "Macro -- run a user command"
   `(do
      ,(do-ex command# ...)))
