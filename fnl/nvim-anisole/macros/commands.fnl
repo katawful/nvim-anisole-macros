@@ -51,8 +51,10 @@
 
 (lambda do-ex [function ...]
   "Macro -- Runs a Ex command
-@function: |Ex| # Ex function
+
+@function: |Ex| # Ex function   
 @... # Arguments for Ex command
+
 Can accept a table for functions that take key=val args"
   (let [passed-args# [...]
         args# []
@@ -66,8 +68,10 @@ Can accept a table for functions that take key=val args"
 
 (lambda do-viml [function ...]
   "Macro -- Runs a VimL function
-@function: |Vimscript| # Vimscript function
+
+@function: |Vimscript| # Vimscript function   
 @... # Arguments for Vimscript command
+
 Returns boolean for builtin truthy/falsy functions such as 'has()'"
   (let [args# ...
         func# (tostring function)]
@@ -79,9 +83,10 @@ Returns boolean for builtin truthy/falsy functions such as 'has()'"
 
 (lambda cre-command [name callback desc ?args]
   "Macro -- Creates a user command
-@name: |string| # Name for user command
-@callback: |string| # The function that gets called on fire of user command
-@desc: |string| # Description of user command
+
+@name: |string| # Name for user command   
+@callback: |string| # The function that gets called on fire of user command   
+@desc: |string| # Description of user command   
 @?args: |opt table| # Opts table for `vim.api.nvim_create_user_command`"
   (assert-arg name :string 1 :cre-command)
   (assert-arg callback [:table :function] 2 :cre-command)
@@ -102,10 +107,12 @@ Returns boolean for builtin truthy/falsy functions such as 'has()'"
 
 (lambda def-command [name command desc ?args]
   "Macro -- define a user command with a returned value
-@name: |string| # Name for user command
-@callback: |string| # The function that gets called on fire of user command
-@desc: |string| # Description of user command
+
+@name: |string| # Name for user command   
+@callback: |string| # The function that gets called on fire of user command   
+@desc: |string| # Description of user command   
 @?args: |opt table| # Opts table for `vim.api.nvim_create_user_command`
+
 Returns a string of the user-command name"
   `(do
      ,(cre-command name command desc ?args)
@@ -113,8 +120,10 @@ Returns a string of the user-command name"
 
 (lambda del-command [name ?buffer]
   "Macro -- delete a user command
-@name: |string| # Name for user command
+
+@name: |string| # Name for user command   
 @?buffer(optional): |int| or |boolean| # Use a buffer
+
 Buffer created user commands will fail if ?buffer is not provided"
   (assert-arg name :string 1 :del-command)
   (if ?buffer

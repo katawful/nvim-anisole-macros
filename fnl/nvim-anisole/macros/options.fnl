@@ -38,8 +38,9 @@
 
 (lambda set-opt [option value ?flag]
   "Macro -- Sets an option
-@option: |object| or |string| # The option, can be written literally
-@value: |any| # The value of the option
+
+@option: |object| or |string| # The option, can be written literally   
+@value: |any| # The value of the option   
 @?flag(optional): |string| # A flag (append, prepend, remove) for the option"
   (assert-arg option [:string :table] 1 :set-opt)
   (if ?flag
@@ -61,8 +62,9 @@
 
 (lambda set-local-opt [option value ?flag]
   "Macro -- set a local option
-@option: |object| or |string| # The option, can be written literally
-@value: |any| # The value of the option
+
+@option: |object| or |string| # The option, can be written literally   
+@value: |any| # The value of the option   
 @?flag(optional): |string| # A flag (append, prepend, remove) for the option"
   (assert-arg option [:string :table] 1 :set-local-opt)
   (assert-compile (or (= (scope option) :win) (= (scope option) :buf))
@@ -87,8 +89,9 @@
 
 (lambda set-global-opt [option value ?flag]
   "Macro -- set a global option
-@option: |object| or |string| # The option, can be written literally
-@value: |any| # The value of the option
+
+@option: |object| or |string| # The option, can be written literally   
+@value: |any| # The value of the option   
 @?flag(optional): |string| # A flag (append, prepend, remove) for the option"
   (assert-arg option [:string :table] 1 :set-global-opt)
   (assert-compile (= (scope option) :global)
@@ -113,8 +116,9 @@
 
 (lambda set-opt-auto [option value ?flag]
   "Macro -- set an option with auto scope
-@option: |object| or |string| # The option, can be written literally
-@value: |any| # The value of the option
+
+@option: |object| or |string| # The option, can be written literally   
+@value: |any| # The value of the option   
 @?flag(optional): |string| # A flag (append, prepend, remove) for the option
 
 Generally, 'set' from Vim will try to use the global scope for anything.
@@ -149,9 +153,12 @@ However, since it sets local options its generally avoided for system wide confi
 
 (lambda set-opts [options ?flag]
   "Macro -- plural of set-opt
-Takes key-value table of options
-@options: |key/val table| # The options, where the key is the option and val is the value
-@?flag(optional): |string| # A flag (append, prepend, remove) for the option"
+
+@options: |key/val table| # The options, where the key is the option and val is the value   
+@?flag(optional): |string| # A flag (append, prepend, remove) for the option
+
+Takes key-value table of options"
+
   (when ?flag
     (do
       (assert-arg ?flag :string 3 :set-opts)
@@ -201,7 +208,8 @@ Takes key-value table of options
 
 (lambda set-local-opts [options ?flag]
   "Macro -- plural of set-local-opt
-@options: |key/val table| # The options, where the key is the option and val is the value
+
+@options: |key/val table| # The options, where the key is the option and val is the value   
 @?flag(optional): |string| # A flag (append, prepend, remove) for the option
 
 Takes key-value table of options"
@@ -259,7 +267,8 @@ Takes key-value table of options"
 
 (lambda set-global-opts [options ?flag]
   "Macro -- plural of set-global-opt
-@options: |key/val table| # The options, where the key is the option and val is the value
+
+@options: |key/val table| # The options, where the key is the option and val is the value   
 @?flag(optional): |string| # A flag (append, prepend, remove) for the option
 
 Takes key-value table of options"
@@ -316,7 +325,8 @@ Takes key-value table of options"
 
 (lambda set-opts-auto [options ?flag]
   "Macro -- plural of set-opt-auto
-@options: |key/val table| # The options, where the key is the option and val is the value
+
+@options: |key/val table| # The options, where the key is the option and val is the value   
 @?flag(optional): |string| # A flag (append, prepend, remove) for the option
 
 Takes key-value table of options
@@ -325,9 +335,9 @@ If you want a local scope you have to use 'setlocal'. This is generally
 not particularly clean, as you then have to remember what is what kind of
 scope. This macro fixes this by always preferring the local scope if available
 but not restricting the use of global-only scoped options
-(set-opt-auto spell true) -> will set spell locally
-(set-opt-auto mouse :nvi) -> will set mouse globally
-(set-opt spell true)      -> will set spell globally
+`(set-opt-auto spell true)` -> will set spell locally   
+`(set-opt-auto mouse :nvi)` -> will set mouse globally   
+`(set-opt spell true)`      -> will set spell globally   
 
 This macro is generally preferred when no specification is needed.
 However, since it sets local options its generally avoided for system wide configs."
@@ -395,14 +405,16 @@ However, since it sets local options its generally avoided for system wide confi
 
 (lambda get-opt [option]
   "Macro -- get an option's value
+
 @option: |object| or |string| # The option, can be written literally"
   (let [opt# (tostring option)]
     `(: (. vim.opt ,opt#) :get)))
 
 (lambda set-var [scope variable value]
   "Macro -- set a Vim variable
-@scope: |string| # The scope of the variable
-@variable: |object| or |string| # The variable itself. Can be string or literal object
+
+@scope: |string| # The scope of the variable   
+@variable: |object| or |string| # The variable itself. Can be string or literal object   
 @value: |any| # The value of the option
 
 For b, w, and t scope, they can be indexed like (. b 1) for their
@@ -429,8 +441,13 @@ return an error."
 
 (lambda set-vars [scope variables]
   "Macro -- plural of set-var for one scope
-@scope: |string| # The scope of the variable
-@variables: |key/val table| # The variables, where the key is the variable and val is the value"
+
+@scope: |string| # The scope of the variable   
+@variables: |key/val table| # The variables, where the key is the variable and val is the value
+
+For b, w, and t scope, they can be indexed like (. b 1) for their
+Lua table equivalent. The other scopes can't take an index and will
+return an error."
   (let [output# [] ;; Put keys and vals into sequential table
         ;; We sort the keys and then use the sorted keys to build the seq val table
         ;; This helps keep the macro consistent in the compiled Lua
@@ -465,8 +482,13 @@ return an error."
 
 (lambda get-var [scope variable]
   "Macro -- get the value of a Vim variable
-@scope: |string| # The scope of the variable
-@variables: |key/val table| # The variables, where the key is the variable and val is the value"
+
+@scope: |string| # The scope of the variable   
+@variables: |key/val table| # The variables, where the key is the variable and val is the value
+
+For b, w, and t scope, they can be indexed like (. b 1) for their
+Lua table equivalent. The other scopes can't take an index and will
+return an error."
   (let [var# (tostring variable)]
     (if (list? scope)
         ;; need to destruct the indexed list and inject the appropriate table

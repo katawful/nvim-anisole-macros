@@ -33,11 +33,12 @@
 
 (lambda cre-map [modes lhs rhs desc ?args]
   "Macro -- Creates a recursive map across multiple modes
+  `
 @modes: |string| or |seq table| # String or seq table of strings corresponding
-                                  to modes
-@lhs: |string| # Left hand of keymap
-@rhs: |string| or |function| or |table # Right hand of keymap
-@desc: |string| # Description of keymap
+                                  to modes   
+@lhs: |string| # Left hand of keymap   
+@rhs: |string| or |function| or |table # Right hand of keymap   
+@desc: |string| # Description of keymap   
 @?args(optional): |opt table| # Opts table for vim.keymap.set"
   (assert-arg modes [:string :table] 1 :set-map)
   (assert-arg lhs :string 2 :set-map)
@@ -53,8 +54,9 @@
 
 (lambda cre-maps [modes ...]
   "Macro -- Creates a recursive map across multiple modes
+
 @modes: |string| or |seq table| # String or seq table of strings corresponding
-                                  to modes
+                                  to modes   
 @... # Stored as sequential tables, each table is the arguments of `set-map`
        minus the `modes` argument"
   (assert-arg modes [:string :table] 1 :set-map)
