@@ -1,7 +1,7 @@
 # options
 Handles setting of options and scoped variables. All option macros can take a flag for `append`, `prepend` and `remove` to keep all functionality. These flags are always the last option of the macro.
 
-[Reference](/doc/reference/fnl/nvim-anisole-macros/options.md)
+[Reference](../reference/fnl/nvim-anisole-macros/options.md)
 
 ## Mono-option Macros
 To simplify syntax, there are macros for setting only 1 option:
