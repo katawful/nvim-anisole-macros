@@ -76,6 +76,7 @@
   (let [autocmds# [...]
         size# (length autocmds#)]
     ;; Recurse through macro to make static
+
     (fn recurse-output [autocmd# i#]
       (let [assertion (?. (?. autocmd# i#) 1)]
         (if assertion
@@ -98,6 +99,7 @@
             `(do
                ,(cre-autocmd! events# pattern# callback# desc# args#)
                ,(recurse-output autocmd# (- i# 1))))))
+
     (recurse-output autocmds# size#)))
 
 (lambda cle-autocmd! [tbl]
@@ -183,8 +185,8 @@
 @?args: |key/val table| # Options table for vim.api.nvim_exec_autocmds"
   (assert-arg events [:string :table] 1 :do-autocmd)
   (let [?args (if (= ?args nil)
-                 {}
-                 ?args)]
+                  {}
+                  ?args)]
     (assert-compile (or (not ?args) (= (type ?args) :table))
                     (.. "\"do-autocmd\" -- Expected table for arg #2, got "
                         (type ?args)) ?args)

@@ -49,7 +49,15 @@
 
 (describe "Create user-command macro:"
           (fn []
-            (it "cre-command without buffer option"
+            (it "cre-command without buffer option with no arg"
+                (fn []
+                  (assert.are.same "(vim.api.nvim_create_user_command \"UserCommand\" (fn [] callback) {:desc \"Description\"})"
+                                   (macrodebug (command.cre-command :UserCommand
+                                                                    (fn []
+                                                                      callback)
+                                                                    :Description)
+                                               true))))
+            (it "cre-command without buffer option with arg"
                 (fn []
                   (assert.are.same "(vim.api.nvim_create_user_command \"UserCommand\" (fn [] callback) {:bang true :desc \"Description\"})"
                                    (macrodebug (command.cre-command :UserCommand
@@ -58,7 +66,7 @@
                                                                     :Description
                                                                     {:bang true})
                                                true))))
-            (it "cre-command with buffer option"
+            (it "cre-command with buffer option with arg"
                 (fn []
                   (assert.are.same "(vim.api.nvim_buf_create_user_command 0 \"UserCommand\" (fn [] callback) {:bang true :desc \"Description\"})"
                                    (macrodebug (command.cre-command :UserCommand
@@ -71,13 +79,20 @@
 
 (describe "Define user-command macro:"
           (fn []
-            (it :def-command
+            (it "def-command with no arg"
                 (fn []
                   (assert.are.same "(do (vim.api.nvim_create_user_command \"UserCommand\" (fn [] callback) {:desc \"Description\"}) \"UserCommand\")"
                                    (macrodebug (command.def-command :UserCommand
                                                  (fn [] callback)
+                                                 :Description)
+                                               true))))
+            (it "def-command with arg"
+                (fn []
+                  (assert.are.same "(do (vim.api.nvim_create_user_command \"UserCommand\" (fn [] callback) {:bang true :desc \"Description\"}) \"UserCommand\")"
+                                   (macrodebug (command.def-command :UserCommand
+                                                 (fn [] callback)
                                                  :Description
-                                                 {})
+                                                 {:bang true})
                                                true))))))
 
 (describe "Delete user-command macro:"

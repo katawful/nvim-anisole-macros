@@ -158,7 +158,6 @@ However, since it sets local options its generally avoided for system wide confi
 @?flag(optional): |string| # A flag (append, prepend, remove) for the option
 
 Takes key-value table of options"
-
   (when ?flag
     (do
       (assert-arg ?flag :string 3 :set-opts)
@@ -182,6 +181,7 @@ Takes key-value table of options"
                out#)
         size# (length key#)]
     ;; We recurse through this macro until all options are placed
+
     (fn recurse-output [key# val# i#]
       ;; Don't go past index
       (if (< 0 i#)
@@ -203,6 +203,7 @@ Takes key-value table of options"
                 `(do
                    (tset vim.opt ,option# ,value#)
                    ,(recurse-output key# val# (- i# 1)))))))
+
     ;; Start recurse
     (recurse-output key# val# size#)))
 
@@ -236,6 +237,7 @@ Takes key-value table of options"
                out#)
         size# (length key#)]
     ;; We recurse through this macro until all options are placed
+
     (fn recurse-output [key# val# i#]
       ;; Don't go past index
       (if (< 0 i#)
@@ -262,6 +264,7 @@ Takes key-value table of options"
                 `(do
                    (tset vim.opt_local ,option# ,value#)
                    ,(recurse-output key# val# (- i# 1)))))))
+
     ;; Start recurse
     (recurse-output key# val# size#)))
 
@@ -295,6 +298,7 @@ Takes key-value table of options"
                out#)
         size# (length key#)]
     ;; We recurse through this macro until all options are placed
+
     (fn recurse-output [key# val# i#]
       ;; Don't go past index
       (if (< 0 i#)
@@ -320,6 +324,7 @@ Takes key-value table of options"
                 `(do
                    (tset vim.opt_global ,option# ,value#)
                    ,(recurse-output key# val# (- i# 1)))))))
+
     ;; Start recurse
     (recurse-output key# val# size#)))
 
@@ -364,6 +369,7 @@ However, since it sets local options its generally avoided for system wide confi
                out#)
         size# (length key#)]
     ;; We recurse through this macro until all options are placed
+
     (fn recurse-output [key# val# i#]
       ;; Don't go past index
       (if (< 0 i#)
@@ -400,6 +406,7 @@ However, since it sets local options its generally avoided for system wide confi
                     `(do
                        (tset vim.opt_local ,option# ,value#)
                        ,(recurse-output key# val# (- i# 1))))))))
+
     ;; Start recurse
     (recurse-output key# val# size#)))
 
@@ -464,6 +471,7 @@ return an error."
                out#)
         size# (length key#)]
     ;; We recurse through this macro until all variables are placed
+
     (fn recurse-output [key# val# i#]
       ;; Don't go past index
       (if (< 0 i#)
@@ -477,6 +485,7 @@ return an error."
                 `(do
                    ,(set-var scope variable# value#)
                    ,(recurse-output key# val# (- i# 1)))))))
+
     ;; Start recurse
     (recurse-output key# val# size#)))
 
