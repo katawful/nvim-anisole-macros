@@ -32,14 +32,16 @@
                                      (type var#)))))
 
 (lambda cre-map [modes lhs rhs desc ?args]
-  "Macro -- Creates a recursive map across multiple modes
-  `
+  "Macro -- Creates a map
+
+```
 @modes: |string| or |seq table| # String or seq table of strings corresponding
-                                  to modes   
-@lhs: |string| # Left hand of keymap   
-@rhs: |string| or |function| or |table # Right hand of keymap   
-@desc: |string| # Description of keymap   
-@?args(optional): |opt table| # Opts table for vim.keymap.set"
+                                  to modes
+@lhs: |string| # Left hand of keymap
+@rhs: |string| or |function| or |table| # Right hand of keymap
+@desc: |string| # Description of keymap
+@?args(optional): |opt table| # Opts table for vim.keymap.set
+```"
   (assert-arg modes [:string :table] 1 :set-map)
   (assert-arg lhs :string 2 :set-map)
   (assert-arg rhs [:string :function :table] 3 :set-map)
@@ -53,12 +55,14 @@
     `(vim.keymap.set ,modes ,lhs ,rhs ,opts#)))
 
 (lambda cre-maps [modes ...]
-  "Macro -- Creates a recursive map across multiple modes
+  "Macro -- Creates multiple maps
 
+```
 @modes: |string| or |seq table| # String or seq table of strings corresponding
-                                  to modes   
+                                  to modes
 @... # Stored as sequential tables, each table is the arguments of `set-map`
-       minus the `modes` argument"
+       minus the `modes` argument
+```"
   (assert-arg modes [:string :table] 1 :set-map)
   (let [maps# [...]
         size# (length maps#)]

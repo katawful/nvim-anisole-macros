@@ -24,9 +24,11 @@ Function signature:
 (cle-autocmd! tbl)
 ```
 
-Macro -- clear autocommands
+Macro -- Clears autocommands
 
+```
 @tbl: |table| ### Options table for vim.api.nvim_clear_autocmds
+```
 
 ## `cle-autocmd<-buffer!`
 Function signature:
@@ -35,9 +37,11 @@ Function signature:
 (cle-autocmd<-buffer! buffers)
 ```
 
-Macro -- clear autocommands from buffers
+Macro -- Clears autocommands from buffers
 
+```
 @buffers: |number| or |boolean| ### Buffer number or current buffer
+```
 
 ## `cle-autocmd<-event!`
 Function signature:
@@ -46,9 +50,11 @@ Function signature:
 (cle-autocmd<-event! events)
 ```
 
-Macro -- clear autocommands from events
+Macro -- Clears autocommands from events
 
+```
 @events: |string| or |seq table| ### Events
+```
 
 ## `cle-autocmd<-group!`
 Function signature:
@@ -57,9 +63,11 @@ Function signature:
 (cle-autocmd<-group! groups)
 ```
 
-Macro -- clear autocommands from group
+Macro -- Clears autocommands from group
 
+```
 @groups: |string| or |number| ### Augroups
+```
 
 ## `cle-autocmd<-pattern!`
 Function signature:
@@ -68,9 +76,11 @@ Function signature:
 (cle-autocmd<-pattern! patterns)
 ```
 
-Macro -- clear autocommands from patterns
+Macro -- Clears autocommands from patterns
 
+```
 @patterns: |string| or |seq table| ### File patterns to match
+```
 
 ## `cre-autocmd!`
 Function signature:
@@ -81,11 +91,13 @@ Function signature:
 
 Macro -- Creates an autocmd
 
-@events: |string| or |seq of strings| ### The autocmd event(s) to use   
-@pattern: |string| or |seq of strings| ### The file pattern(s) to match against   
-@callback: |function| or |string| ### The function or vimscript that gets called on fire of autocmd   
-@desc: |string| ### Description of autocmd   
-@?args: |opt table| ### Table of options for `vim.api.nvim_create_autocmd`   
+```
+@events: |string| or |seq of strings| ### The autocmd event(s) to use
+@pattern: |string| or |seq of strings| ### The file pattern(s) to match against
+@callback: |function| or |string| ### The function or vimscript that gets called on fire of autocmd
+@desc: |string| ### Description of autocmd
+@?args: |opt table| ### Table of options for `vim.api.nvim_create_autocmd`
+```
 
 ## `def-augroup!`
 Function signature:
@@ -96,8 +108,10 @@ Function signature:
 
 Macro -- Defines an auto group and returns the id
 
+```
 @name: |string| ### Name of group
 @?no-clear(optional): |boolean| ### If true, don't clear out group. Opposite of default
+```
 
 ## `del-augroup!`
 Function signature:
@@ -106,9 +120,11 @@ Function signature:
 (del-augroup! augroup)
 ```
 
-Macro -- delete augroup by augroup or name
+Macro -- Deletes augroup by id or name
 
+```
 @augroup: |string| or |number| ### Augroup
+```
 
 ## `do-augroup`
 Function signature:
@@ -119,8 +135,10 @@ Function signature:
 
 Macro -- Inserts an auto group into autocmd calls
 
+```
 @group: |number| ### id of augroup
 @... ### `cre-autocmd!` calls only
+```
 
 ## `do-autocmd`
 Function signature:
@@ -129,10 +147,12 @@ Function signature:
 (do-autocmd events ?args)
 ```
 
-Macro -- do autocommand
+Macro -- Runs an autocommand
 
-@events: |string| or |seq table| ### Events   
+```
+@events: |string| or |seq table| ### Events
 @?args: |key/val table| ### Options table for vim.api.nvim_exec_autocmds
+```
 
 ## `get-autocmd`
 Function signature:
@@ -141,9 +161,11 @@ Function signature:
 (get-autocmd tbl)
 ```
 
-Macro -- get autocommands
+Macro -- Gets autocommands
 
+```
 @tbl: |table| ### Options table for vim.api.nvim_clear_autocmds
+```
 
 ## `get-autocmd<-event`
 Function signature:
@@ -152,9 +174,11 @@ Function signature:
 (get-autocmd<-event events)
 ```
 
-Macro -- get autocommands from events
+Macro -- Gets autocommands from events
 
+```
 @events: |string| or |seq table| ### Events
+```
 
 ## `get-autocmd<-group`
 Function signature:
@@ -163,9 +187,11 @@ Function signature:
 (get-autocmd<-group groups)
 ```
 
-Macro -- get autocommand from group
+Macro -- Gets autocommand from group
 
+```
 @groups: |string| or |number| ### Augroups
+```
 
 ## `get-autocmd<-pattern`
 Function signature:
@@ -174,9 +200,11 @@ Function signature:
 (get-autocmd<-pattern patterns)
 ```
 
-Macro -- get autocommands from patterns
+Macro -- Gets autocommands from patterns
 
+```
 @patterns: |string| or |seq table| ### File patterns to match
+```
 
 
 ---

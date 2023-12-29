@@ -12,14 +12,16 @@ Function signature:
 (cre-map modes lhs rhs desc ?args)
 ```
 
-Macro -- Creates a recursive map across multiple modes
-  `
+Macro -- Creates a map
+
+```
 @modes: |string| or |seq table| ### String or seq table of strings corresponding
-                                  to modes   
-@lhs: |string| ### Left hand of keymap   
-@rhs: |string| or |function| or |table ### Right hand of keymap   
-@desc: |string| ### Description of keymap   
+                                  to modes
+@lhs: |string| ### Left hand of keymap
+@rhs: |string| or |function| or |table| ### Right hand of keymap
+@desc: |string| ### Description of keymap
 @?args(optional): |opt table| ### Opts table for vim.keymap.set
+```
 
 ## `cre-maps`
 Function signature:
@@ -28,12 +30,14 @@ Function signature:
 (cre-maps modes ...)
 ```
 
-Macro -- Creates a recursive map across multiple modes
+Macro -- Creates multiple maps
 
+```
 @modes: |string| or |seq table| ### String or seq table of strings corresponding
-                                  to modes   
+                                  to modes
 @... ### Stored as sequential tables, each table is the arguments of `set-map`
        minus the `modes` argument
+```
 
 
 ---

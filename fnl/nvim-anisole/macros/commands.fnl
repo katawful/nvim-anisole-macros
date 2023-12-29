@@ -52,8 +52,10 @@
 (lambda do-ex [function ...]
   "Macro -- Runs a Ex command
 
-@function: |Ex| # Ex function   
+```
+@function: |Ex| # Ex function
 @... # Arguments for Ex command
+```
 
 Can accept a table for functions that take key=val args"
   (let [passed-args# [...]
@@ -69,8 +71,10 @@ Can accept a table for functions that take key=val args"
 (lambda do-viml [function ...]
   "Macro -- Runs a VimL function
 
-@function: |Vimscript| # Vimscript function   
+```
+@function: |Vimscript| # Vimscript function
 @... # Arguments for Vimscript command
+```
 
 Returns boolean for builtin truthy/falsy functions such as 'has()'"
   (let [args# ...
@@ -84,10 +88,12 @@ Returns boolean for builtin truthy/falsy functions such as 'has()'"
 (lambda cre-command [name callback desc ?args]
   "Macro -- Creates a user command
 
-@name: |string| # Name for user command   
-@callback: |string| # The function that gets called on fire of user command   
-@desc: |string| # Description of user command   
-@?args: |opt table| # Opts table for `vim.api.nvim_create_user_command`"
+```
+@name: |string| # Name for user command
+@callback: |string| # The function that gets called on fire of user command
+@desc: |string| # Description of user command
+@?args: |opt table| # Opts table for vim.api.nvim_create_user_command
+```"
   (assert-arg name :string 1 :cre-command)
   (assert-arg callback [:table :function] 2 :cre-command)
   (assert-arg desc :string 3 :cre-command)
@@ -106,12 +112,14 @@ Returns boolean for builtin truthy/falsy functions such as 'has()'"
         `(vim.api.nvim_create_user_command ,name ,callback ,opts#))))
 
 (lambda def-command [name command desc ?args]
-  "Macro -- define a user command with a returned value
+  "Macro -- Defines a user command with a returned value
 
-@name: |string| # Name for user command   
-@callback: |string| # The function that gets called on fire of user command   
-@desc: |string| # Description of user command   
-@?args: |opt table| # Opts table for `vim.api.nvim_create_user_command`
+```
+@name: |string| # Name for user command
+@callback: |string| # The function that gets called on fire of user command
+@desc: |string| # Description of user command
+@?args: |opt table| # Opts table for vim.api.nvim_create_user_command
+```
 
 Returns a string of the user-command name"
   `(do
@@ -121,8 +129,10 @@ Returns a string of the user-command name"
 (lambda del-command [name ?buffer]
   "Macro -- delete a user command
 
-@name: |string| # Name for user command   
+```
+@name: |string| # Name for user command
 @?buffer(optional): |int| or |boolean| # Use a buffer
+```
 
 Buffer created user commands will fail if ?buffer is not provided"
   (assert-arg name :string 1 :del-command)
@@ -135,7 +145,11 @@ Buffer created user commands will fail if ?buffer is not provided"
       `(vim.api.nvim_del_user_command ,name)))
 
 (lambda do-command [command# ...]
-  "Macro -- run a user command"
+  "Macro -- Runs a user command
+```
+@command#: |string| # Name for user command
+@... # Arguments for user command
+```"
   `(do
      ,(do-ex command# ...)))
 
