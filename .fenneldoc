@@ -1,0 +1,22 @@
+;; -*- mode: fennel; -*- vi:ft=fennel
+;; Configuration file for Fenneldoc v1.0.1
+;; https://gitlab.com/andreyorst/fenneldoc
+
+{:fennel-path {}
+ :function-signatures true
+ :ignored-args-patterns ["%.%.%." "%_" "%_[^%s]+"]
+ :inline-references "link"
+ :insert-comment true
+ :insert-copyright true
+ :insert-license true
+ :insert-version true
+ :mode "doc"
+ :modules-info {}
+ :order "alphabetic"
+ :out-dir "./doc/reference"
+ :sandbox true
+ :test-requirements {}
+ :toc true
+
+ :project-license "[Unlicense](https://github.com/katawful/nvim-anisole-macros/blob/main/LICENSE)"
+ :project-version "prerelease"}
