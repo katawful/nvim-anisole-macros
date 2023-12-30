@@ -2,7 +2,7 @@
 ;; [nfnl-macro]
 
 ;; Module
-(local M {})
+(local M {:run {}})
 
 (fn assert-arg [var# var-type# var-pos# macro#]
   "FN -- Handle `assert-compile` simpler"
@@ -52,7 +52,7 @@
                          :islocked true
                          :isnan true})
 
-(lambda M.do-ex [function ...]
+(lambda M.run.command [function ...]
   "Macro -- Runs a Ex command
 
 ```
@@ -71,7 +71,11 @@ Can accept a table for functions that take key=val args"
           (table.insert args# (tostring arg#))))
     `(vim.cmd {:cmd ,function :args ,args# :output true})))
 
-(lambda M.do-viml [function ...]
+(lambda M.run.cmd [function ...]
+  "Macro -- Abbreviated M.run.command"
+  `,(M.run.command function ...))
+
+(lambda M.run.function [function ...]
   "Macro -- Runs a VimL function
 
 ```
@@ -88,7 +92,11 @@ Returns boolean for builtin truthy/falsy functions such as 'has()'"
              (if (= result# 0) false true)))
         `((. vim.fn ,func#) ,...))))
 
-(lambda M.cre-command [name callback desc ?args]
+(lambda M.run.fn [function ...]
+  "Macro -- Abbreviated M.run.function"
+  `,(M.run.function function ...))
+
+(lambda M.create [name callback desc ?args]
   "Macro -- Creates a user command
 
 ```
@@ -114,7 +122,7 @@ Returns boolean for builtin truthy/falsy functions such as 'has()'"
                                                  ,opts#))
         `(vim.api.nvim_create_user_command ,name ,callback ,opts#))))
 
-(lambda M.def-command [name command desc ?args]
+(lambda M.define [name command desc ?args]
   "Macro -- Defines a user command with a returned value
 
 ```
@@ -126,10 +134,10 @@ Returns boolean for builtin truthy/falsy functions such as 'has()'"
 
 Returns a string of the user-command name"
   `(do
-     ,(M.cre-command name command desc ?args)
+     ,(M.create name command desc ?args)
      ,name))
 
-(lambda M.del-command! [name ?buffer]
+(lambda M.delete! [name ?buffer]
   "Macro -- delete a user command
 
 ```
@@ -146,14 +154,5 @@ Buffer created user commands will fail if ?buffer is not provided"
             `(vim.api.nvim_buf_del_user_command ,name 0)
             `(vim.api.nvim_buf_del_user_command ,name ,?buffer)))
       `(vim.api.nvim_del_user_command ,name)))
-
-(lambda M.do-command [command# ...]
-  "Macro -- Runs a user command
-```
-@command#: |string| # Name for user command
-@... # Arguments for user command
-```"
-  `(do
-     ,(M.do-ex command# ...)))
 
 M

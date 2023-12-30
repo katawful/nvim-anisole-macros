@@ -2,18 +2,19 @@
 
 **Table of contents**
 
-- [`cre-command`](#cre-command)
-- [`def-command`](#def-command)
-- [`del-command!`](#del-command)
-- [`do-command`](#do-command)
-- [`do-ex`](#do-ex)
-- [`do-viml`](#do-viml)
+- [`create`](#create)
+- [`define`](#define)
+- [`delete!`](#delete)
+- [`run.cmd`](#runcmd)
+- [`run.command`](#runcommand)
+- [`run.fn`](#runfn)
+- [`run.function`](#runfunction)
 
-## `cre-command`
+## `create`
 Function signature:
 
 ```
-(cre-command name callback desc ?args)
+(create name callback desc ?args)
 ```
 
 Macro -- Creates a user command
@@ -25,11 +26,11 @@ Macro -- Creates a user command
 @?args: |opt table| ### Opts table for vim.api.nvim_create_user_command
 ```
 
-## `def-command`
+## `define`
 Function signature:
 
 ```
-(def-command name command desc ?args)
+(define name command desc ?args)
 ```
 
 Macro -- Defines a user command with a returned value
@@ -43,11 +44,11 @@ Macro -- Defines a user command with a returned value
 
 Returns a string of the user-command name
 
-## `del-command!`
+## `delete!`
 Function signature:
 
 ```
-(del-command! name ?buffer)
+(delete! name ?buffer)
 ```
 
 Macro -- delete a user command
@@ -59,24 +60,20 @@ Macro -- delete a user command
 
 Buffer created user commands will fail if ?buffer is not provided
 
-## `do-command`
+## `run.cmd`
 Function signature:
 
 ```
-(do-command command# ...)
+(run.cmd function ...)
 ```
 
-Macro -- Runs a user command
-```
-@command#: |string| ### Name for user command
-@... ### Arguments for user command
-```
+Macro -- Abbreviated M.run.command
 
-## `do-ex`
+## `run.command`
 Function signature:
 
 ```
-(do-ex function ...)
+(run.command function ...)
 ```
 
 Macro -- Runs a Ex command
@@ -88,11 +85,20 @@ Macro -- Runs a Ex command
 
 Can accept a table for functions that take key=val args
 
-## `do-viml`
+## `run.fn`
 Function signature:
 
 ```
-(do-viml function ...)
+(run.fn function ...)
+```
+
+Macro -- Abbreviated M.run.function
+
+## `run.function`
+Function signature:
+
+```
+(run.function function ...)
 ```
 
 Macro -- Runs a VimL function
