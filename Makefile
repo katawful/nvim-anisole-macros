@@ -1,8 +1,9 @@
 FNLSOURCES = $(wildcard fnl/nvim-anisole/macros/*.fnl)
+FNLTESTS = $(wildcard test/fnl/nvim-anisole/macros/*.fnl)
 FENNELDOC = $(.test-config/nvim/pack/nfnl-tests/start/fenneldoc/fenneldoc)
-.PHONY: test doc
+.PHONY: format test doc
 
-default: test doc
+default: format test doc
 
 doc:
 	./fenneldoc --mode doc $(FNLSOURCES)
