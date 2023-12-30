@@ -105,13 +105,13 @@ Returns boolean for builtin truthy/falsy functions such as 'has()'"
 @desc: |string| # Description of user command
 @?args: |opt table| # Opts table for vim.api.nvim_create_user_command
 ```"
-  (assert-arg name :string 1 :cre-command)
-  (assert-arg callback [:table :function] 2 :cre-command)
-  (assert-arg desc :string 3 :cre-command)
+  (assert-arg name :string 1 :create)
+  (assert-arg callback [:table :function] 2 :create)
+  (assert-arg desc :string 3 :create)
   (let [opts# {}]
     (tset opts# :desc desc)
     (when ?args
-      (assert-arg ?args :table 4 :cre-command)
+      (assert-arg ?args :table 4 :create)
       (each [k# v# (pairs ?args)]
         (tset opts# k# v#)))
     (if (?. ?args :buffer)
@@ -146,10 +146,10 @@ Returns a string of the user-command name"
 ```
 
 Buffer created user commands will fail if ?buffer is not provided"
-  (assert-arg name :string 1 :del-command!)
+  (assert-arg name :string 1 :delete!)
   (if ?buffer
       (do
-        (assert-arg ?buffer [:boolean :number] 2 :del-command!)
+        (assert-arg ?buffer [:boolean :number] 2 :delete!)
         (if (= ?buffer true)
             `(vim.api.nvim_buf_del_user_command ,name 0)
             `(vim.api.nvim_buf_del_user_command ,name ,?buffer)))
