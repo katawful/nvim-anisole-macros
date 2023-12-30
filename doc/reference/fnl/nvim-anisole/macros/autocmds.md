@@ -2,26 +2,26 @@
 
 **Table of contents**
 
-- [`cle-autocmd!`](#cle-autocmd)
-- [`cle-autocmd<-buffer!`](#cle-autocmd-buffer)
-- [`cle-autocmd<-event!`](#cle-autocmd-event)
-- [`cle-autocmd<-group!`](#cle-autocmd-group)
-- [`cle-autocmd<-pattern!`](#cle-autocmd-pattern)
-- [`cre-autocmd!`](#cre-autocmd)
-- [`def-augroup!`](#def-augroup)
-- [`del-augroup!`](#del-augroup)
-- [`do-augroup`](#do-augroup)
-- [`do-autocmd`](#do-autocmd)
-- [`get-autocmd`](#get-autocmd)
-- [`get-autocmd<-event`](#get-autocmd-event)
-- [`get-autocmd<-group`](#get-autocmd-group)
-- [`get-autocmd<-pattern`](#get-autocmd-pattern)
+- [`cmd.clear!`](#cmdclear)
+- [`cmd.clear<-buffer!`](#cmdclear-buffer)
+- [`cmd.clear<-event!`](#cmdclear-event)
+- [`cmd.clear<-group!`](#cmdclear-group)
+- [`cmd.clear<-pattern!`](#cmdclear-pattern)
+- [`cmd.create`](#cmdcreate)
+- [`cmd.get`](#cmdget)
+- [`cmd.get<-event`](#cmdget-event)
+- [`cmd.get<-group`](#cmdget-group)
+- [`cmd.get<-pattern`](#cmdget-pattern)
+- [`cmd.run`](#cmdrun)
+- [`group.define`](#groupdefine)
+- [`group.delete!`](#groupdelete)
+- [`group.fill`](#groupfill)
 
-## `cle-autocmd!`
+## `cmd.clear!`
 Function signature:
 
 ```
-(cle-autocmd! tbl)
+(cmd.clear! tbl)
 ```
 
 Macro -- Clears autocommands
@@ -30,11 +30,11 @@ Macro -- Clears autocommands
 @tbl: |table| ### Options table for vim.api.nvim_clear_autocmds
 ```
 
-## `cle-autocmd<-buffer!`
+## `cmd.clear<-buffer!`
 Function signature:
 
 ```
-(cle-autocmd<-buffer! buffers)
+(cmd.clear<-buffer! buffers)
 ```
 
 Macro -- Clears autocommands from buffers
@@ -43,11 +43,11 @@ Macro -- Clears autocommands from buffers
 @buffers: |number| or |boolean| ### Buffer number or current buffer
 ```
 
-## `cle-autocmd<-event!`
+## `cmd.clear<-event!`
 Function signature:
 
 ```
-(cle-autocmd<-event! events)
+(cmd.clear<-event! events)
 ```
 
 Macro -- Clears autocommands from events
@@ -56,11 +56,11 @@ Macro -- Clears autocommands from events
 @events: |string| or |seq table| ### Events
 ```
 
-## `cle-autocmd<-group!`
+## `cmd.clear<-group!`
 Function signature:
 
 ```
-(cle-autocmd<-group! groups)
+(cmd.clear<-group! groups)
 ```
 
 Macro -- Clears autocommands from group
@@ -69,11 +69,11 @@ Macro -- Clears autocommands from group
 @groups: |string| or |number| ### Augroups
 ```
 
-## `cle-autocmd<-pattern!`
+## `cmd.clear<-pattern!`
 Function signature:
 
 ```
-(cle-autocmd<-pattern! patterns)
+(cmd.clear<-pattern! patterns)
 ```
 
 Macro -- Clears autocommands from patterns
@@ -82,11 +82,11 @@ Macro -- Clears autocommands from patterns
 @patterns: |string| or |seq table| ### File patterns to match
 ```
 
-## `cre-autocmd!`
+## `cmd.create`
 Function signature:
 
 ```
-(cre-autocmd! events pattern callback desc ?args)
+(cmd.create events pattern callback desc ?args)
 ```
 
 Macro -- Creates an autocmd
@@ -99,52 +99,63 @@ Macro -- Creates an autocmd
 @?args: |opt table| ### Table of options for `vim.api.nvim_create_autocmd`
 ```
 
-## `def-augroup!`
+## `cmd.get`
 Function signature:
 
 ```
-(def-augroup! name ?no-clear)
+(cmd.get tbl)
 ```
 
-Macro -- Defines an auto group and returns the id
+Macro -- Gets autocommands
 
 ```
-@name: |string| ### Name of group
-@?no-clear(optional): |boolean| ### If true, don't clear out group. Opposite of default
+@tbl: |table| ### Options table for vim.api.nvim_clear_autocmds
 ```
 
-## `del-augroup!`
+## `cmd.get<-event`
 Function signature:
 
 ```
-(del-augroup! augroup)
+(cmd.get<-event events)
 ```
 
-Macro -- Deletes augroup by id or name
+Macro -- Gets autocommands from events
 
 ```
-@augroup: |string| or |number| ### Augroup
+@events: |string| or |seq table| ### Events
 ```
 
-## `do-augroup`
+## `cmd.get<-group`
 Function signature:
 
 ```
-(do-augroup group ...)
+(cmd.get<-group groups)
 ```
 
-Macro -- Inserts an auto group into autocmd calls
+Macro -- Gets autocommand from group
 
 ```
-@group: |number| ### id of augroup
-@... ### `cre-autocmd!` calls only
+@groups: |string| or |number| ### Augroups
 ```
 
-## `do-autocmd`
+## `cmd.get<-pattern`
 Function signature:
 
 ```
-(do-autocmd events ?args)
+(cmd.get<-pattern patterns)
+```
+
+Macro -- Gets autocommands from patterns
+
+```
+@patterns: |string| or |seq table| ### File patterns to match
+```
+
+## `cmd.run`
+Function signature:
+
+```
+(cmd.run events ?args)
 ```
 
 Macro -- Runs an autocommand
@@ -154,56 +165,45 @@ Macro -- Runs an autocommand
 @?args: |key/val table| ### Options table for vim.api.nvim_exec_autocmds
 ```
 
-## `get-autocmd`
+## `group.define`
 Function signature:
 
 ```
-(get-autocmd tbl)
+(group.define name ?no-clear)
 ```
 
-Macro -- Gets autocommands
+Macro -- Defines an auto group and returns the id
 
 ```
-@tbl: |table| ### Options table for vim.api.nvim_clear_autocmds
+@name: |string| ### Name of group
+@?no-clear(optional): |boolean| ### If true, don't clear out group. Opposite of default
 ```
 
-## `get-autocmd<-event`
+## `group.delete!`
 Function signature:
 
 ```
-(get-autocmd<-event events)
+(group.delete! augroup)
 ```
 
-Macro -- Gets autocommands from events
+Macro -- Deletes augroup by id or name
 
 ```
-@events: |string| or |seq table| ### Events
+@augroup: |string| or |number| ### Augroup
 ```
 
-## `get-autocmd<-group`
+## `group.fill`
 Function signature:
 
 ```
-(get-autocmd<-group groups)
+(group.fill group ...)
 ```
 
-Macro -- Gets autocommand from group
+Macro -- Fills cmd.create calls with an augroup
 
 ```
-@groups: |string| or |number| ### Augroups
-```
-
-## `get-autocmd<-pattern`
-Function signature:
-
-```
-(get-autocmd<-pattern patterns)
-```
-
-Macro -- Gets autocommands from patterns
-
-```
-@patterns: |string| or |seq table| ### File patterns to match
+@group: |number| ### id of augroup
+@... ### `cmd.create` calls only
 ```
 
 
