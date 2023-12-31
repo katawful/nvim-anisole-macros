@@ -8,16 +8,16 @@ Creates maps, supporting single and multiple maps. For multi-mode maps, each set
 
 ### Syntax
 ```fennel
-(create :n lhs rhs "Description")
+(map.create :n lhs rhs "Description")
 (vim.keymap.set :n lhs rhs {:desc "Description"})
 
-(create [:n :v] lhs rhs "Description")
+(map.create [:n :v] lhs rhs "Description")
 (vim.keymap.set :n lhs rhs {:desc "Description"})
 
-(create :n lhs rhs "Description" {:remap true})
+(map.create :n lhs rhs "Description" {:remap true})
 (vim.keymap.set :n lhs rhs {:desc "Description" :remap true})
 
-(create :n [lhs rhs "Description"]
+(map.create :n [lhs rhs "Description"]
            [lhs rhs "Description"])
 (do (vim.keymap.set :n lhs rhs {:desc "Description"})
     (do (vim.keymap.set :n lhs rhs {:desc "Description"})))

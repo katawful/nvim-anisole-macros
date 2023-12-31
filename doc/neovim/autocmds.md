@@ -4,7 +4,10 @@ Handles dealing with autocommands and autogroups.
 
 [Reference](../reference/fnl/nvim-anisole/macros/autocmds.md)
 
-## `auto.group.define`
+
+Note, for this document, I assume that the macro uses the namespace `auto`. This is because autocmd and augroup macros are placed inside their own tables.
+
+## `group.define`
 Defines an autogroup to be returned for a variable.
 
 ### Syntax
@@ -15,7 +18,7 @@ Defines an autogroup to be returned for a variable.
 ```
 The boolean is optional. It inverts the functionality of `nvim_create_augroup`. If set to false or nil (i.e. no argument after the name), then the default behavior of `nvim_create_augroup` will be used. This means augroups will clear upon each call.
 
-## `auto.cmd.create`
+## `cmd.create`
 Creates an autocommand. It is not designed to be accepted by a variable for manipulation. Like maps and user command macros, it can take an optional description and options table. The events, pattern, and callback are required.
 
 ### Syntax
@@ -43,7 +46,7 @@ Creates an autocommand. It is not designed to be accepted by a variable for mani
 (vim.api.nvim_create_autocmd :Event {:pattern "*.file" :callback auto-callback :desc "Autocmd description" :buffer 0})
 ```
 
-## `auto.group.fill`
+## `group.fill`
 Absorbs `auto.cmd.create` calls within its list, and injects the group throughout each. Only accepts `auto.cmd.create` after the group variable.
 
 ### Syntax
@@ -58,7 +61,7 @@ Absorbs `auto.cmd.create` calls within its list, and injects the group throughou
 
 The group must have been previously defined, it cannot be passed through with this macro. For additional notice, only `autocmd-` calls are accepted. Attempting to use anything else will result in a compile-time error. This is *not* a way to be programmatic about autocommand creation, it is only equivalent to the `->` threading macros in function. Any programmatic work of autocommands must be done in a list outside of this scope.
 
-## `auto.cmd.clear!`
+## `cmd.clear!`
 Clears an autocommand using `vim.api.nvim_clear_autocommands`.
 
 ### Syntax
@@ -67,13 +70,13 @@ Clears an autocommand using `vim.api.nvim_clear_autocommands`.
 (vim.api.nivm_clear_autocmds {:buffer 0})
 ```
 
-## `auto.cmd.clear<-event!`, `auto.cmd.clear<-pattern!`, `auto.cmd.clear<-buffer!`, `auto.cmd.clear<-group!`
+## `cmd.clear<-event!`, `cmd.clear<-pattern!`, `cmd.clear<-buffer!`, `cmd.clear<-group!`
 Takes the appropriate type, single and plural, and only that type and clears the autocommands using `vim.api.nvim_clear_autocommands`
 
-- `auto.cmd.clear<-event!`: takes a string or sequential table of strings corresponding to event name
-- `auto.cmd.clear<-pattern!`: takes a string or sequential table of strings corresponding to a pattern
-- `auto.cmd.clear<-buffer!`: takes a int buffer number
-- `auto.cmd.clear<-group!`: takes a string or sequential table of strings corresponding to group name
+- `cmd.clear<-event!`: takes a string or sequential table of strings corresponding to event name
+- `cmd.clear<-pattern!`: takes a string or sequential table of strings corresponding to a pattern
+- `cmd.clear<-buffer!`: takes a int buffer number
+- `cmd.clear<-group!`: takes a string or sequential table of strings corresponding to group name
 
 ### Syntax
 ```fennel
@@ -81,7 +84,7 @@ Takes the appropriate type, single and plural, and only that type and clears the
 (vim.api.nvim_clear_autocmd {:event "Event"})
 ```
 
-## `auto.cmd.get`
+## `cmd.get`
 Clears an autocommand using `vim.api.nvim_get_autocmds`.
 
 ### Syntax
@@ -90,12 +93,12 @@ Clears an autocommand using `vim.api.nvim_get_autocmds`.
 (vim.api.nivm_get_autocmds {:buffer 0})
 ```
 
-## `auto.cmd.get<-event`, `auto.cmd.get<-pattern`, `auto.cmd.get<-buffer`, `auto.cmd.get<-group`
+## `cmd.get<-event`, `cmd.get<-pattern`, `cmd.get<-buffer`, `cmd.get<-group`
 Takes the appropriate type, single and plural, and only that type and gets the autocommands using `vim.api.nvim_get_autocmds`
 
-- `auto.cmd.get<-event`: takes a string or sequential table of strings corresponding to event name
-- `auto.cmd.get<-pattern`: takes a string or sequential table of strings corresponding to a pattern
-- `auto.cmd.get<-group`: takes a string or sequential table of strings corresponding to group name
+- `cmd.get<-event`: takes a string or sequential table of strings corresponding to event name
+- `cmd.get<-pattern`: takes a string or sequential table of strings corresponding to a pattern
+- `cmd.get<-group`: takes a string or sequential table of strings corresponding to group name
 
 ### Syntax
 ```fennel
@@ -103,7 +106,7 @@ Takes the appropriate type, single and plural, and only that type and gets the a
 (vim.api.nvim_get_autocmds {:event "Event"})
 ```
 
-## `auto.group.delete!`
+## `group.delete!`
 Deletes an autogroup by name or by id.
 
 ### Syntax
@@ -115,7 +118,7 @@ Deletes an autogroup by name or by id.
 (vim.api.nvim_del_augroup_by_id 0)
 ```
 
-## `auto.cmd.run`
+## `cmd.run`
 Fires an autocmd using `vim.api.nvim_exec_autocmds`.
 
 ### Syntax
@@ -130,44 +133,44 @@ Fires an autocmd using `vim.api.nvim_exec_autocmds`.
 ## Examples
 ```fennel
 ; macro form
-(let [highlight (def-augroup "highlightOnYank")]
+(let [highlight (auto.group.define "highlightOnYank")]
   (auto.group.fill highlight
         (auto.cmd.create "TextYankPost" :* 
                          (fn [] ((. (require :vim.highlight) :on_yank)))
                          "Highlight yank region")))
-(let [terminal (def-augroup "terminalSettings")]
+(let [terminal (auto.group.define "terminalSettings")]
   (auto.group.fill terminal
-   (auto.cmd.create "TermOpen" :* (fn [] (setl- number false)) "No number")
-   (auto.cmd.create "TermOpen" :* (fn [] (setl- relativenumber false)) "No relative number")
-   (auto.cmd.create "TermOpen" :* (fn [] (setl- spell false)) "No spell")
-   (auto.cmd.create "TermOpen" :* (fn [] (setl- bufhidden :hide)) "Bufhidden")))
+   (auto.cmd.create "TermOpen" :* (fn [] (option.set number false)) "No number")
+   (auto.cmd.create "TermOpen" :* (fn [] (option.set relativenumber false)) "No relative number")
+   (auto.cmd.create "TermOpen" :* (fn [] (option.set spell false)) "No spell")
+   (auto.cmd.create "TermOpen" :* (fn [] (option.set bufhidden :hide)) "Bufhidden")))
 
 ; expansion
 (let [highlight (vim.api.nvim_create_augroup "highlightOnYank" {:clear true})]
   (vim.api.nvim_create_autocmd "TextYankPost"
                                {:pattern :*
-			        :callback (fn [] ((. (require :vim.highlight) :on_yank)))
-				:desc "Highlight yank region"
-				:group highlight}))
+			                    :callback (fn [] ((. (require :vim.highlight) :on_yank)))
+				                :desc "Highlight yank region"
+				                :group highlight}))
 (let [terminal (vim.api.nvim_create_augroup "terminalSettings" {:clear true})]
   (vim.api.nvim_create_autocmd "TermOpen" 
                                {:pattern :* 
-			        :callback (fn [] (setl- number false))
-				:group terminal
-				:desc "No number"})
+			                    :callback (fn [] (setl- number false))
+				                :group terminal
+				                :desc "No number"})
   (vim.api.nvim_create_autocmd "TermOpen" 
                                {:pattern :* 
-			        :callback (fn [] (setl- relativenumber false)) 
-				:group terminal
-				:desc "No relative number"})
+			                    :callback (fn [] (setl- relativenumber false)) 
+				                :group terminal
+				                :desc "No relative number"})
   (vim.api.nvim_create_autocmd "TermOpen" 
                                {:pattern :* 
-			        :callback (fn [] (setl- spell false)) 
-				:group terminal
-				:desc "No spell"})
+			                    :callback (fn [] (setl- spell false)) 
+				                :group terminal
+				                :desc "No spell"})
   (vim.api.nvim_create_autocmd "TermOpen" 
                                {:pattern :* 
-			        :callback (fn [] (setl- bufhidden :hide)) 
-				:group terminal
-				:desc "Bufhidden"})))
+			                    :callback (fn [] (setl- bufhidden :hide)) 
+				                :group terminal
+				                :desc "Bufhidden"})))
 ```

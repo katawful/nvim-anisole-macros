@@ -6,33 +6,33 @@ Many `vim.X` functions take "opts table", regular Lua tables, that modify some a
 
 ## Creation Macro
 ```fennel
-(cre-macro immediate-info command description ?args-table)
+(create immediate-info command description ?args-table)
 ```
 For `immediate-info`, this varies immensely based on the macro in use. For mappings macros, this is actually 2 symbols or lists:
 ```fennel
-(cre-map mode-table left-hand-side right-hand-side description ?args-table)
+(map.create mode-table left-hand-side right-hand-side description ?args-table)
 ```
 For an autocommand macro, it is also 2 symbols/lists. It is kept this way to maintain the general idea of how the Vimscript versions of these functions work overall, rather than go out of the way to make a new syntax.
 
 ```fennel
 (let [user-command "MyReallyAwesomeAndVeryLongUserCommand"]
-  (cre-command user-command (fn [] (print "hi"))))
+  (command.create user-command (fn [] (print "hi"))))
 ```
 
 ## Definition Macro
 This macro behaves the same as the equivalent creation macro, but returns a value. This is useful if you want to further manipulate said values:
 
 ```fennel
-(let [user-command (def-command "UserCommand" (fn [] (print "hi")))]
-  (del-command! user-command))
+(let [user-command (command.define "UserCommand" (fn [] (print "hi")))]
+  (command.delete! user-command))
 ```
 
 ## Deletion and Clear Macros
 For these macros, a "deletion" is specifically about removing the entire object. After the expanded macro is run, the object passed will not exist according to Neovim. A "clearing", on the other hand, will only remove the values present for the object. Neovim will still be aware of the object:
 
 ```fennel
-(cle-autocmd<-event! :BufEnter) ; clear any autocommands found for BufEnter
-(del-command! "UserCommand") ; delete the entire user command "UserCommand"
+(auto.cmd.clear<-event! :BufEnter) ; clear any autocommands found for BufEnter
+(command.delete! "UserCommand") ; delete the entire user command "UserCommand"
 ```
 
 Deletion/clearing will depend on how the macro in use works, and is in part determined by the underlying API (e.g. `nvim_clear_autocmds` vs `nvim_del_user_command`).
@@ -41,32 +41,32 @@ Deletion/clearing will depend on how the macro in use works, and is in part dete
 "Get" macros are designed to get the value of some object. This is purely a data access. The data type returned depends on the macro:
 
 ```fennel
-(get-autocmd {:group "SomeCoolGroup"}) ; get autocommands from group "SomeCoolGroup"
-(print (get-opt mouse)) ; print the value of option "mouse"
+(auto.cmd.get {:group "SomeCoolGroup"}) ; get autocommands from group "SomeCoolGroup"
+(print (option.get mouse)) ; print the value of option "mouse"
 ```
 
 ## Set Macro
 "Set" macros are designed to set the value of some object. This (mostly, see below) implies that the value exists. This is mostly for options macros.
 
 ```fennel
-(set-opt mouse true)
-(set-var :g :cool_var true)
+(option.set mouse true)
+(option.set :g :cool_var true)
 ```
 
 Note that due to how Vim variables work, this macro is slightly incongruent in that the variable does not need to exist before being set. This behavior may change in the future.
 
-## Do Macro
-The `do-` macros that interface with `vim.cmd` have the ability to take a key value table that expands to the proper `key=value` syntax for said functions. The following example will expand to:
+## Run Macro
+The `run` macros that interface with `vim.cmd` have the ability to take a key value table that expands to the proper `key=value` syntax for said functions. The following example will expand to:
 ```fennel
-(do-ex highlight :Normal {:guifg :white})
+(command.run.cmd highlight :Normal {:guifg :white})
 (vim.cmd {:cmd "highlight" :args [Normal "guifg=white"] :output true})
 ```
-All `do-` macros can take any amount of arguments as needed by the function.
+All `run` macros can take any amount of arguments as needed by the function.
 
-### `do-viml` Truthy Return
+### `run.function` Truthy Return
 This macro wraps any 0/1 boolean VimL function and outputs a proper Fennel boolean for you. See the example:
 
 ```fennel
-(if (do-viml filereadable :test.txt) (print "is readable"))
+(if (command.run.cmd filereadable :test.txt) (print "is readable"))
 (if (= (vim.fn.filereadable :test.txt) 1) (print "is readable"))
 ```
