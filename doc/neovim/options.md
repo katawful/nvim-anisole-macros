@@ -1,114 +1,83 @@
 # options
-Handles setting of options and scoped variables. All option macros can take a flag for `append`, `prepend` and `remove` to keep all functionality. These flags are always the last option of the macro.
+Handles setting of options and scoped variables.
 
 [Reference](../reference/fnl/nvim-anisole/macros/options.md)
 
-## Mono-option Macros
-To simplify syntax, there are macros for setting only 1 option:
+## `set`
+Sets options and variables, in a simplified singular form and an extensive multiple form. For options, local setting is preferred (`vim.opt_local` vs `vim.opt`).
 
-### `set-opt`
-This sets a single option, not keeping in mind scope of the option (global & local)
+### `set` For a Single Option
+This sets one option, taking optional `append`, `prepend`, or `remove` flags.
+
+### Syntax
+```fennel
+(options.set option_local value)
+(tset vim.opt_local option_local value)
+
+(options.set option_global value)
+(tset vim.opt_global option_global value)
+
+(options.set option value :append)
+(: (. vim.opt_global :option) :append value)
+```
+
+### `set` For Multiple Options
+This sets multiple options, taking optional `append`, `prepend`, or `remove` flags.
+The options are stored inside a key/value table, where the key is the option and value is the option value.
+This handles option scoping the same as for a singular option.
 
 #### Syntax
 ```fennel
-(set-opt option value)
-(tset vim.opt "option" value)
+(options.set {option_local value option_global value})
+(do (tset vim.opt_local option_local value) (do (tset vim.opt_global option_global value)))
 
-(set-opt option value :append)
-(: (. vim.opt "option") "append" value)
+(options.set {option1 value option2 value} :append)
+(do (: (. vim.opt_local :option_local) :append value)
+    (do (: (. vim.opt_global :option_global) :append value)))
 ```
 
-### `set-local-opt`
-This sets an option that has the `buf` or `win` scope as a local option. Returns an error if a global option is passed.
+### `set` For a Single Variable
+This will set a single variable, including being able to index a scope (e.g. `(. b 1)`).
 
 #### Syntax
 ```fennel
-(set-local-opt spell true)
-(tset vim.opt_local "spell" true)
+(options.set :g variable value)
+(tset (. vim :g) :variable value)
 
-(set-local-opt spell true :append)
-(: (. vim.opt_local "spell") "append" true)
+(options.set (. b 1) :variable value)
+(tset (. (. vim :b) 1) :variable value)
 ```
 
-#### `set-global-opt`
-This sets an option that has the `global` scope as a global option. Returns an error if a local option is passed.
-
-##### Syntax
-```fennel
-(set-global-opt mouse :nvi)
-(tset vim.opt_global "mouse" "nvi")
-
-(set-global-opt mouse :nvi :append)
-(: (. vim.opt_global "mouse") "append" "nvi")
-```
-
-### `set-opt-auto`
-This automatically sets an option as either local or global.
+### `set` For Multiple Variables
+This will set multiple variables, including being able to index a scope (e.g. `(. b 1)`).
+The variables are stored inside a key/value table, where the key is the name of the variable and the value is the variable value.
 
 #### Syntax
 ```fennel
-(set-opt-auto mouse :nvi)
-(tset vim.opt_global "mouse" "nvi")
-
-(set-opt-auto spell true)
-(tset vim.opt_local "spell" true)
+(options.set :g {variable1 value variable2 value})
+(do (tset (. vim :g) :variable1 value) (do (tset (. vim :g) :variable2 value)))
 ```
 
-## Plural-option Macros
-These macros set multiple of options, following the same rules as the mono-option macros. These macros are sorted to always return the same order of operations. These are not sorted as the passed options, they are sorted with `table.sort`:
+## `get`
+This gets the value of a single option or variable.
 
-``` fennel
-(set-opts {spell true mouse :nvi})
-(do (tset vim.opt "spell" true) (do (tset vim.opt "mouse" "nvi")))
-```
+### `get` For an Option
+This just takes the option name, and returns any value it contains.
 
-- `set-opts`
-- `set-local-opts`
-- `set-global-opts`
-- `set-opts-auto`
-
-## `get-opt`
-Gets an option.
-
-### Syntax
+#### Syntax
 ```fennel
-(get-opt spell)
-(: (. vim.opt "spell") "get")
+(options.get option)
+(: (. vim.opt :option) :get)
 ```
 
-## `set-var`
-Sets a vim variable. Supports scope indexing. When using a scope index, returns an error on compilation if anything other than `b`, `w`, or `t` scope is used.
+### `get` For a Vim Variable
+This takes the scope, which can be indexed (e.g. `(. b 1)`), and the variable name
 
-### Syntax
+#### Syntax
 ```fennel
-(set-var :g variable "Value")
-(tset (. vim "g") "variable" "Value")
+(options.get :g variable)
+(. (. vim :g) :variable)
 
-(set-var (. :b 1) variable "Value")
-(tset (. (. vim "b") 1) "variable" "Value")
+(options.get (. b 1) variable)
+(. (. (. vim :b) 1) :variable))
 ```
-
-## `set-vars`
-Sets multiple vim variable using a key/value table. Supports scope indexing. When using a scope index, returns an error on compilation if anything other than `b`, `w`, or `t` scope is used.
-
-### Syntax
-```fennel
-(option.set-vars :g {:variable_1 "Value" :variable_2 true})
-(do (tset (. vim "g") "variable_2" true) (tset (. vim "g") "variable_1" "Value"))
-
-(option.set-vars (. :b 1) {:variable_1 "Value" :variable_2 true})
-(do (tset (. (. vim "b") 1) "variable_2" true) (tset (. vim "g") "variable_1" "Value"))
-```
-
-## `get-var`
-Gets a vim variable. Supports scope indexing. When using a scope index, returns an error on compilation if anything other than `b`, `w`, or `t` scope is used.
-
-### Syntax
-```fennel
-(get-var :g variable)
-(. (. vim "g") "variable")
-
-(get-var (. :b 1) variable)
-(. (. (. vim "b") 1) "variable")
-```
-
