@@ -5,6 +5,10 @@ FENNELDOC = $(.test-config/nvim/pack/nfnl-tests/start/fenneldoc/fenneldoc)
 
 default: format test doc
 
+deps:
+	scripts/setup-test-deps.sh
+	scripts/update-test-deps.sh
+
 doc:
 	./fenneldoc --mode doc $(FNLSOURCES)
 
