@@ -81,7 +81,6 @@
 @group: |number| # id of augroup
 @... # `cmd.create` calls only
 ```"
-  (assert-arg group :number 1 :group.fill)
   (let [autocmds# [...]
         size# (length autocmds#)]
     ;; Recurse through macro to make static
