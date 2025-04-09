@@ -47,7 +47,7 @@
   (let [opt# (tostring opt)]
     (. (vim.api.nvim_get_option_info2 opt# {}) :scope)))
 
-(lambda M.private.set-opt-auto [option value ?flag]
+(lambda M.private.set-opt-auto [option value ?flag ?force]
   "Macro -- Sets an option with auto scope
 
 ```
@@ -69,29 +69,44 @@ This macro is generally preferred when no specification is needed.
 However, since it sets local options its generally avoided for system wide configs."
   (when ?flag
     (do
-      (assert-arg ?flag :string 3 :private.set-opt-auto)
-      (assert-compile (or (= ?flag :append) (= ?flag :prepend)
-                          (= ?flag :remove))
-                      (string.format "\"private.set-opt-auto\" -- Expected append, prepend, or remove; got '%s'"
-                                     ?flag) ?flag)))
+      ; (assert-arg ?flag :string 3 :private.set-opt-auto)
+      (assert-compile (or (= (type ?flag) :string) (= (?. ?flag 1) :nil))
+                      (string.format "\"private.set-opt-auto\" -- Expected string or nil for arg #3, receieved '%s'"
+                                     ?flag) ?flag)
+      (when (not= (?. ?flag 1) :nil)
+        (assert-compile (or (= ?flag :append) (= ?flag :prepend)
+                            (= ?flag :remove))
+                        (string.format "\"private.set-opt-auto\" -- Expected append, prepend, or remove; got '%s'"
+                                       ?flag) ?flag))))
   (let [scope# (scope option)
-        opt# (tostring option)]
-    (if ?flag
-        (match scope#
-          :win `(: (. vim.opt_local ,opt#) ,?flag ,value)
-          :buf `(: (. vim.opt_local ,opt#) ,?flag ,value)
-          :global `(: (. vim.opt_global ,opt#) ,?flag ,value))
-        (match scope#
-          :win `(tset vim.opt_local ,opt# ,value)
-          :buf `(tset vim.opt_local ,opt# ,value)
-          :global `(tset vim.opt_global ,opt# ,value)))))
+        opt# (tostring option)
+        flag# (if (= (type ?flag) :string)
+                  ?flag
+                  (?. ?flag 1))]
+    (if (or (= flag# "nil")
+            (= flag# nil))
+        (do
+          (if (= ?force "nil")
+              `(tset vim.opt ,opt# ,value)
+              (match scope#
+                :win `(tset vim.opt_local ,opt# ,value)
+                :buf `(tset vim.opt_local ,opt# ,value)
+                :global `(tset vim.opt_global ,opt# ,value))))
+        (do
+          (if (= ?force "nil")
+              `(: (. vim.opt ,opt#) ,flag# ,value)
+              (match scope#
+                :win `(: (. vim.opt_local ,opt#) ,flag# ,value)
+                :buf `(: (. vim.opt_local ,opt#) ,flag# ,value)
+                :global `(: (. vim.opt_global ,opt#) ,flag# ,value)))))))
 
-(lambda M.private.set-opts-auto [options ?flag]
+(lambda M.private.set-opts-auto [options ?flag ?force]
   "Macro -- Plural of set-opt-auto
 
 ```
 @options: |key/val table| # The options, where the key is the option and val is the value
-@?flag(optional): |string| # A flag (append, prepend, remove) for the option
+@?flag(optional): |string| # A flag (append, prepend, remove, force) for the option
+@?force(optional): |boolean| # Force set to global when possible?
 ```
 
 Takes key-value table of options
@@ -108,11 +123,15 @@ This macro is generally preferred when no specification is needed.
 However, since it sets local options its generally avoided for system wide configs."
   (when ?flag
     (do
-      (assert-arg ?flag :string 3 :private.set-opts-auto)
-      (assert-compile (or (= ?flag :append) (= ?flag :prepend)
-                          (= ?flag :remove))
-                      (string.format "\"private.set-opts-auto\" -- Expected append, prepend, or remove; got '%s'"
-                                     ?flag) ?flag)))
+      ; (assert-arg ?flag :string 3 :private.set-opts-auto)
+      (assert-compile (or (= (type ?flag) :string) (= (?. ?flag 1) :nil))
+                      (string.format "\"private.set-opt-auto\" -- Expected string or nil for arg #3, receieved '%s'"
+                                     ?flag) ?flag)
+      (when (not= (?. ?flag 1) :nil)
+        (assert-compile (or (= ?flag :append) (= ?flag :prepend)
+                            (= ?flag :remove))
+                        (string.format "\"private.set-opts-auto\" -- Expected append, prepend, or remove; got '%s'"
+                                       ?flag) ?flag))))
   (let [output# [] ;; Put keys and vals into sequential table
         ;; We sort the keys and then use the sorted keys to build the seq val table
         ;; This helps keep the macro consistent in the compiled Lua
@@ -127,6 +146,9 @@ However, since it sets local options its generally avoided for system wide confi
                (each [k# v# (ipairs key#)]
                  (table.insert out# (. options v#)))
                out#)
+        flag# (if (= (type ?flag) :string)
+                  ?flag
+                  (?. ?flag 1))
         size# (length key#)]
     ;; We recurse through this macro until all options are placed
 
@@ -139,32 +161,53 @@ However, since it sets local options its generally avoided for system wide confi
                 scope# (scope option#)]
             ;; If at one, we are at the end of the recurse and can finish this call
             (if (= 1 i#)
-                (if (= scope# :global)
-                    (if ?flag
+                (if (or (= ?force "nil")
+                        (= ?force nil))
+                    (if (or (= flag# "nil")
+                            (= flag# nil))
                         `(do
-                           (: (. vim.opt_global ,option#) ,?flag ,value#))
+                           (tset vim.opt ,option# ,value#))
                         `(do
-                           (tset vim.opt_global ,option# ,value#)))
-                    (if ?flag
+                           (: (. vim.opt ,option#) ,flag# ,value#)))
+                    (= scope# :global)
+                    (if (or (= flag# "nil")
+                            (= flag# nil))
                         `(do
-                           (: (. vim.opt_local ,option#) ,?flag ,value#))
+                           (tset vim.opt_global ,option# ,value#))
                         `(do
-                           (tset vim.opt_local ,option# ,value#)))))
-            ;; For recursion
-            (if (= scope# :global)
-                (if ?flag
+                           (: (. vim.opt_global ,option#) ,flag# ,value#)))
+                    (if (or (= flag# "nil")
+                            (= flag# nil))
+                        `(do
+                           (tset vim.opt_local ,option# ,value#))
+                        `(do
+                           (: (. vim.opt_local ,option#) ,flag# ,value#)))))
+            (if (or (= ?force "nil")
+                    (= ?force nil))
+                (if (or (= flag# :nil)
+                        (= flag# nil))
                     `(do
-                       (: (. vim.opt_global ,option#) ,?flag ,value#)
+                       (tset vim.opt ,option# ,value#)
                        ,(recurse-output key# val# (- i# 1)))
+                    `(do
+                       (: (. vim.opt ,option#) ,flag# ,value#)
+                       ,(recurse-output key# val# (- i# 1))))
+                (= scope# :global)
+                (if (or (= flag# "nil")
+                        (= flag# nil))
                     `(do
                        (tset vim.opt_global ,option# ,value#)
-                       ,(recurse-output key# val# (- i# 1))))
-                (if ?flag
-                    `(do
-                       (: (. vim.opt_local ,option#) ,?flag ,value#)
                        ,(recurse-output key# val# (- i# 1)))
                     `(do
+                       (: (. vim.opt_global ,option#) ,flag# ,value#)
+                       ,(recurse-output key# val# (- i# 1))))
+                (if (or (= flag# "nil")
+                        (= flag# nil))
+                    `(do
                        (tset vim.opt_local ,option# ,value#)
+                       ,(recurse-output key# val# (- i# 1)))
+                    `(do
+                       (: (. vim.opt_local ,option#) ,flag# ,value#)
                        ,(recurse-output key# val# (- i# 1))))))))
 
     ;; Start recurse
@@ -330,9 +373,9 @@ return an error.
                          `,(M.private.set-vars (. lists 1) (. lists 2))))
                    (sym? (. lists 1))
                    `,(M.private.set-opt-auto (. lists 1) (. lists 2)
-                                             (?. lists 3))
+                                             (?. lists 3) (?. lists 4))
                    `,(M.private.set-opts-auto (. lists 1) (. lists 2)
-                                              (?. lists 3)))))))
+                                              (?. lists 3) (?. lists 4)))))))
 
 (lambda M.private.get-var [scope variable]
   "Macro -- Get the value of a Vim variable

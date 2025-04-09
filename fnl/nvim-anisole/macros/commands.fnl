@@ -63,13 +63,24 @@
 Can accept a table for functions that take key=val args"
   (let [passed-args# [...]
         args# []
-        function (tostring function)]
+        function (tostring function)
+        bang?# (if (= (string.sub function -1) "!") true false)
+        function (if bang?#
+                     (string.sub function 0 -2)
+                     function)]
     (each [_ arg# (ipairs passed-args#)]
-      (if (= (type arg#) :table)
-          (each [key# val# (pairs arg#)]
-            (table.insert args# (string.format "%s=%s" key# val#)))
-          (table.insert args# (tostring arg#))))
-    `(vim.cmd {:cmd ,function :args ,args# :output true})))
+      (if (= (type arg#) :string) (table.insert args# arg#)
+          (sym? arg#) (table.insert args# arg#)
+          (not (and (sequence? arg#) (list? arg#))) (each [key# val# (pairs arg#)]
+                                                      (if (= (type key#)
+                                                             :number)
+                                                          (table.insert args#
+                                                                        val#)
+                                                          (table.insert args#
+                                                                        (string.format "%s=%s"
+                                                                                       key#
+                                                                                       val#))))))
+    `(vim.cmd {:cmd ,function :args ,args# :bang ,bang?#})))
 
 (lambda M.run.cmd [function ...]
   "Macro -- Abbreviated M.run.command"

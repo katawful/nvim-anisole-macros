@@ -6,7 +6,7 @@ local assert = require("luassert.assert")
 local function _2_()
   local function _3_()
     local function _4_()
-      return "(tset vim.opt_local \"spell\" true)"
+      return "(: (. vim.opt_local \"spell\") nil true)"
     end
     return assert.are.same("(tset vim.opt_local \"spell\" true)", _4_())
   end

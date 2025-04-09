@@ -432,13 +432,15 @@ There are similarities however:
   "Macro -- Set the priority of a non-lazy plugin
 ```
 @priority: |number| # The priority, higher is more priority
-```")
+```"
+  nil)
 
 (fn M.spec.optional? [optional?#]
   "Macro -- Spec won't be use
 ```
 @optional?: |boolean| # Use spec?
-```")
+```"
+  nil)
 
 (fn quote-macro [spec# macro-name# call-args#]
   "Quotes a macro for use during compilation.

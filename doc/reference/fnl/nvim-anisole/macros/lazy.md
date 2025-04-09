@@ -398,7 +398,10 @@ Function signature:
 (spec.optional? optional?#)
 ```
 
-**Undocumented**
+Macro -- Spec won't be use
+```
+@optional?: |boolean| ### Use spec?
+```
 
 ## `spec.opts`
 Function signature:
@@ -419,7 +422,10 @@ Function signature:
 (spec.priority priority#)
 ```
 
-**Undocumented**
+Macro -- Set the priority of a non-lazy plugin
+```
+@priority: |number| ### The priority, higher is more priority
+```
 
 ## `spec.startup`
 Function signature:
